@@ -1,0 +1,13 @@
+import { api } from './client';
+export const fetchKpi = (range) => api.get(`/stats/kpi?range=${range}`);
+export const fetchDaily = (days) => api.get(`/stats/daily?days=${days}`);
+export const fetchProjects = () => api.get('/stats/projects');
+export const fetchDow = () => api.get('/stats/dow');
+export const fetchHourHeatmap = () => api.get('/stats/hour-heatmap');
+export const fetchPomo = (days) => api.get(`/stats/pomo?days=${days}`);
+export const fetchDistribution = () => api.get('/stats/distribution');
+export const fetchInsights = (range) => api.get(`/stats/insights?range=${range}`);
+export const fetchWeatherStats = () => api.get('/stats/weather');
+export const fetchDetailed = (range) => api.get(`/stats/detailed?range=${range}`);
+export const fetchAllPomo = () => api.get('/stats/pomo?days=9999');
+export const fetchAllDaily = () => api.get('/stats/daily?days=9999');
