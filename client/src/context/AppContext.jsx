@@ -57,6 +57,7 @@ export function AppProvider({ children }) {
   const [pomoRunning, setPomoRunning] = useState(false);
   const [sessionsD, setSessionsD] = useState(0);
   const [planIdx, setPlanIdx] = useState(0);
+  const [pomoCompleted, setPomoCompleted] = useState(0);
   const pomoIntervalRef = useRef(null);
   const pomoSettingsRef = useRef(pomoSettings);
   pomoSettingsRef.current = pomoSettings;
@@ -101,6 +102,7 @@ export function AppProvider({ children }) {
         initialIdx = totalDone % plan.length;
         const mode = plan[initialIdx];
         setPlanIdx(initialIdx);
+        setPomoCompleted(totalDone);
         setPomoMode(mode);
         const secs = mode === 'work' ? merged.work : mode === 'short' ? merged.short : merged.long;
         setPomoSec(secs);
@@ -398,6 +400,7 @@ export function AppProvider({ children }) {
       setPomoMode(types[next]);
       return next;
     });
+    setPomoCompleted(prev => prev + 1);
   }, [pomoSettings]);
 
   const skipToNext = useCallback(() => {
@@ -424,6 +427,7 @@ export function AppProvider({ children }) {
         setPomoTotal(secs);
         return next;
       });
+      setPomoCompleted(prev => prev + 1);
     }
   }, [pomoSettings]);
 
@@ -531,6 +535,7 @@ export function AppProvider({ children }) {
     pomoIntervalRef.current = null;
     setPomoRunning(false);
     setSessionsD(0);
+    setPomoCompleted(0);
     pomoWorkStartRef.current = null;
     const types = getPlanTypes(pomoSettings);
     if (types.length > 0) {
@@ -556,7 +561,7 @@ export function AppProvider({ children }) {
     isPomoControlled,
     setActiveEntry, setTaskRunning, setTaskPaused, setTaskStart, setCurrentSegStart,
     // Pomo
-    pomoMode, pomoSec, pomoTotal, pomoRunning, sessionsD, planIdx,
+    pomoMode, pomoSec, pomoTotal, pomoRunning, sessionsD, planIdx, pomoCompleted,
     startPomo, pausePomo, resetPomo, setPomoMode: setPomoModeFn,
     setPomoSec, setPomoTotal, setSessionsD, setPlanIdx,
     advancePlan, skipToNext, resetAllPomo,
