@@ -372,7 +372,7 @@ export function AppProvider({ children }) {
         return prev - 1;
       });
     }, 1000);
-  }, [pomoMode, pomoTotal, advancePlan]);
+  }, [pomoMode, pomoTotal]);
 
   const pausePomo = useCallback(() => {
     clearInterval(pomoIntervalRef.current);
