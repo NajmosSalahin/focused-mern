@@ -17,7 +17,7 @@ app.use((req, res, next) => {
     "font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; " +
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; " +
     "script-src 'self' 'unsafe-inline'; " +
-    "connect-src 'self' https://api.openweathermap.org"
+    "connect-src 'self' https://api.open-meteo.com https://nominatim.openstreetmap.org https://ipapi.co"
   );
   next();
 });

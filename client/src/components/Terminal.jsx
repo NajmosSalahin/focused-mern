@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useApp } from '../context/AppContext';
+import * as entriesApi from '../api/entries';
 
 const ASCII_LOGO_ROWS = [
   [' _____  ___    ____  _   _  ____  _____  ____ ', '#fabd2f'],
@@ -20,7 +21,7 @@ export default function Terminal() {
     taskRunning, taskPaused, activeEntry,
     startPomo, pausePomo, resetPomo, setPomoMode,
     startTracking, stopTracking, pauseTracking, resumeTracking,
-    reloadEntries, reloadProjects, reloadGoals, reloadPomo, addToast,
+    setEntries, setGoals, addToast,
     clock24h,
   } = app;
 
@@ -429,11 +430,9 @@ export default function Terminal() {
       if (!task) { tl(`  <span style="color:#fb4934">Task name is required.</span>`); return; }
       const end = new Date();
       const start = new Date(end - ms);
-      fetch('/api/entries', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('focused_token')}` },
-        body: JSON.stringify({ task, projectId: proj?._id || null, projectName: proj?.name || null, startTime: start.toISOString(), endTime: end.toISOString(), durationMs: ms }),
-      }).then(() => { reloadEntries(); reloadGoals(); });
+      entriesApi.createEntry({ task, projectId: proj?._id || null, projectName: proj?.name || null, startTime: start.toISOString(), endTime: end.toISOString(), durationMs: ms })
+        .then(created => { if (created) setEntries(prev => [created, ...prev]); })
+        .catch(() => {});
       tl(`  <span style="color:#b8bb26">+ Added: <strong style="color:#ebdbb2">${escHtml(task)}</strong> — ${fmtMS(ms)}${proj ? ' · ' + escHtml(proj.name) : ''}</span>`);
     }, { desc: 'Add a manual entry', usage: 'add <task> <duration> [#project]' });
 
@@ -559,21 +558,18 @@ export default function Terminal() {
       const entry = today[idx];
       if (taskRunning && activeEntry?._id === entry._id) { tl(`  <span style="color:#fb4934">Cannot delete a running entry.</span>`); return; }
       const id = entry._id;
-      fetch(`/api/entries/${id}`, {
-        method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('focused_token')}` },
-      }).then(() => { reloadEntries(); });
+      entriesApi.deleteEntry(id).then(() => {
+        setEntries(prev => prev.filter(e => e._id !== id));
+      }).catch(() => {});
       tl(`  <span style="color:#fb4934">✗ Deleted: <strong>${escHtml(entry.task)}</strong> (${fmtMS(entry.durationMs)})</span>`);
     }, { desc: 'Delete a today entry by index', usage: 'delete <index> (from entries list)' });
 
     r('note', ({ args }) => {
       const text = args.join(' ').trim();
       if (!text) { tl(`  <span style="color:#fb4934">Usage: note &lt;text&gt;</span>`); return; }
-      fetch('/api/entries', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('focused_token')}` },
-        body: JSON.stringify({ task: `📝 ${text}`, projectId: null, projectName: null, startTime: new Date().toISOString(), endTime: new Date().toISOString(), durationMs: 0, isNote: true }),
-      }).then(() => { reloadEntries(); });
+      entriesApi.createEntry({ task: `📝 ${text}`, projectId: null, projectName: null, startTime: new Date().toISOString(), endTime: new Date().toISOString(), durationMs: 0, isNote: true })
+        .then(created => { if (created) setEntries(prev => [created, ...prev]); })
+        .catch(() => {});
       tl(`  <span style="color:#83a598">📝 Note saved: <em style="color:#a89984">${escHtml(text)}</em></span>`);
     }, { desc: 'Save a timestamped note', usage: 'note <text>' });
 
@@ -800,7 +796,7 @@ export default function Terminal() {
     r(['exit','quit','q'], () => { setOpen(false); }, { desc: 'Close terminal' });
 
     Object.assign(CMDS, c);
-  }, [CMDS, entries, projects, goals, pomoSessions, pomoRunning, pomoSec, pomoMode, pomoSettings, pomoGoalTarget, sessionsD, taskRunning, taskPaused, activeEntry, clock24h, termLine, startPomo, pausePomo, resetPomo, setPomoMode, startTracking, stopTracking, pauseTracking, resumeTracking, reloadEntries, reloadGoals, bootBanner, fmtMS, escHtml, projColor]);
+  }, [CMDS, entries, projects, goals, pomoSessions, pomoRunning, pomoSec, pomoMode, pomoSettings, pomoGoalTarget, sessionsD, taskRunning, taskPaused, activeEntry, clock24h, termLine, startPomo, pausePomo, resetPomo, setPomoMode, startTracking, stopTracking, pauseTracking, resumeTracking, bootBanner, fmtMS, escHtml, projColor]);
 
   const termExec = useCallback((raw) => {
     const trimmed = raw.trim();

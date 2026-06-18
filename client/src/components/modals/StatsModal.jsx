@@ -130,7 +130,7 @@ const CHART_COLORS = ['#458588', '#b16286', '#689d6a', '#d79921', '#cc241d', '#9
 const HEAT_COLORS = ['#282828', '#3c3836', '#504945', '#665c54', '#7c6f64', '#928374', '#a89984', '#bdae93', '#d5c4a1', '#ebdbb2'];
 
 export default function StatsModal() {
-  const { projects, goals, pomoSessions, addToast } = useApp();
+  const { projects, goals, pomoSessions, entries: ctxEntries, addToast } = useApp();
   const [open, setOpen] = useState(false);
   const [range, setRange] = useState('30');
   const [loading, setLoading] = useState(false);
@@ -146,6 +146,7 @@ export default function StatsModal() {
   const [weatherStats, setWeatherStats] = useState(null);
   const [showWeather, setShowWeather] = useState(false);
   const [entries, setStatsEntries] = useState([]);
+  const statsCache = useRef({});
 
   // Heatmap data
   const [hmDaily, setHmDaily] = useState([]);
@@ -190,7 +191,28 @@ export default function StatsModal() {
     loadStats();
   }, [open, range]);
 
-  const loadStats = async () => {
+  const loadStats = async (forceRefresh = false) => {
+    const cacheKey = range;
+    if (!forceRefresh && statsCache.current[cacheKey]) {
+      const c = statsCache.current[cacheKey];
+      setKpi(c.kpi);
+      setDaily(c.daily);
+      setProjStats(c.projStats);
+      setDowData(c.dowData);
+      setHourHeat(c.hourHeat);
+      setPomoStats(c.pomoStats);
+      setDist(c.dist);
+      setInsights(c.insights);
+      setDetailed(c.detailed);
+      setHmDaily(c.hmDaily);
+      setHmPomo(c.hmPomo);
+      setStatsEntries(c.statsEntries);
+      if (c.weatherStats) {
+        setWeatherStats(c.weatherStats);
+        if (c.weatherStats.paired && c.weatherStats.paired.length > 0) setShowWeather(true);
+      }
+      return;
+    }
     setLoading(true);
     try {
       const [
@@ -208,31 +230,39 @@ export default function StatsModal() {
         fetchDetailed(range),
         fetchAllDaily(),
         fetchAllPomo(),
-        import('../../api/entries').then(m => m.fetchEntries()),
+        Promise.resolve(ctxEntries),
       ]);
-      setKpi(k || {});
-      setDaily(d || []);
-      setProjStats(p || []);
-      setDowData(dw || []);
-      setHourHeat(hh || []);
-      setPomoStats(ps || []);
-      setDist(di?.buckets || di || []);
-      setInsights(ins || []);
-      setDetailed(det || {});
-      setHmDaily(allD || []);
-      setHmPomo(allP || []);
-      setStatsEntries(allE || []);
+      const cached = {
+        kpi: k || {}, daily: d || [], projStats: p || [], dowData: dw || [],
+        hourHeat: hh || [], pomoStats: ps || [], dist: di?.buckets || di || [],
+        insights: ins || [], detailed: det || {}, hmDaily: allD || [],
+        hmPomo: allP || [], statsEntries: allE || [],
+      };
+      statsCache.current[cacheKey] = cached;
+      setKpi(cached.kpi);
+      setDaily(cached.daily);
+      setProjStats(cached.projStats);
+      setDowData(cached.dowData);
+      setHourHeat(cached.hourHeat);
+      setPomoStats(cached.pomoStats);
+      setDist(cached.dist);
+      setInsights(cached.insights);
+      setDetailed(cached.detailed);
+      setHmDaily(cached.hmDaily);
+      setHmPomo(cached.hmPomo);
+      setStatsEntries(cached.statsEntries);
     } catch { addToast('Failed to load stats', 'err'); }
     setLoading(false);
     loadWeather();
   };
 
-  const loadWeather = async () => {
-    try {
-      const wx = await fetchWeatherStats();
+  const loadWeather = () => {
+    if (statsCache.current[range]?.weatherStats) return;
+    fetchWeatherStats().then(wx => {
       setWeatherStats(wx);
+      if (statsCache.current[range]) statsCache.current[range].weatherStats = wx;
       if (wx && wx.paired && wx.paired.length > 0) setShowWeather(true);
-    } catch { /* ignore */ }
+    }).catch(() => {});
   };
 
   // Animate KPI values on load
@@ -752,8 +782,11 @@ export default function StatsModal() {
     addToast('PDF report opened in new tab');
   };
 
+  const [weatherBusy, setWeatherBusy] = useState(false);
+
   const handleEnableWeather = () => {
     if (!navigator.geolocation) { addToast('Geolocation not available', 'err'); return; }
+    setWeatherBusy(true);
     navigator.geolocation.getCurrentPosition(
       async (pos) => {
         try {
@@ -775,9 +808,10 @@ export default function StatsModal() {
           loadWeather();
           addToast('Weather data enabled!');
         } catch { addToast('Failed to fetch weather', 'err'); }
+        setWeatherBusy(false);
       },
-      () => addToast('Location access denied', 'err'),
-      { timeout: 8000 }
+      () => { addToast('Location access denied or timed out', 'err'); setWeatherBusy(false); },
+      { timeout: 20000, enableHighAccuracy: false }
     );
   };
 
@@ -1435,8 +1469,8 @@ export default function StatsModal() {
                         <i className="fas fa-cloud-sun" style={{ marginRight: 6 }}></i>
                         Enable location access to track how weather affects your focus.
                       </p>
-                      <button className="btn btn-p" onClick={handleEnableWeather}>
-                        <i className="fas fa-location-dot"></i> ENABLE WEATHER STATS
+                      <button className="btn btn-p" onClick={handleEnableWeather} disabled={weatherBusy}>
+                        {weatherBusy ? <i className="fas fa-circle-notch fa-spin"></i> : <i className="fas fa-location-dot"></i>} {weatherBusy ? 'Detecting location…' : 'ENABLE WEATHER STATS'}
                       </button>
                       {weatherStats && weatherStats.paired && weatherStats.paired.length > 0 && (
                         <button className="btn btn-s" onClick={toggleWeather} style={{ marginLeft: 8 }}>

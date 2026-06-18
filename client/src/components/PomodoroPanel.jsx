@@ -23,7 +23,8 @@ const validatePlan = (types) => {
 
 function SortableBlock({ id, type, sec, state, isCur, onClick, children }) {
   const isDone = state === 'done';
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id, disabled: isDone });
+  const noDrag = isDone || window.innerWidth <= 768;
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id, disabled: noDrag });
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -44,7 +45,7 @@ function SortableBlock({ id, type, sec, state, isCur, onClick, children }) {
 
 export default function PomodoroPanel() {
   const {
-    pomoMode, pomoSec, pomoTotal, pomoRunning, sessionsD, pomoSettings, planIdx,
+    pomoMode, pomoSec, pomoTotal, pomoRunning, sessionsD, pomoSettings, planIdx, pomoCompleted,
     startPomo, pausePomo, resetPomo, resetAllPomo, setPomoMode, setSessionsD, setPlanIdx,
     setPomoSettings, addToast, pomoSessions, skipToNext,
     projects, isPomoControlled
@@ -92,8 +93,6 @@ export default function PomodoroPanel() {
 
   const handleTabClick = (m) => {
     setPomoMode(m);
-    const idx = types.indexOf(m, planIdx);
-    if (idx >= 0) setPlanIdx(idx);
   };
 
   const handleEditClick = () => {
@@ -163,10 +162,11 @@ export default function PomodoroPanel() {
   const today = new Date().toISOString().split('T')[0];
   const todayWorks = pomoSessions.filter(s => s.mode === 'work' && new Date(s.completedAt).toISOString().split('T')[0] === today).length;
 
-  // Compute completion state: blocks before planIdx are done (resets each cycle)
+  // Track completed blocks via pomoCompleted (increments on complete/skip, resets on Reset All, unaffected by drag)
+  const doneCount = types.length > 0 ? pomoCompleted % types.length : 0;
   const blockStates = (() => {
     const states = new Array(types.length).fill('');
-    for (let i = 0; i < planIdx; i++) states[i] = 'done';
+    for (let i = 0; i < doneCount; i++) states[i] = 'done';
     return states;
   })();
 
@@ -193,7 +193,7 @@ export default function PomodoroPanel() {
 
   const handleDnDEnd = (event) => {
     const { active, over } = event;
-    const dist = Math.sqrt(dragOffset.x ** 2 + dragOffset.y ** 2);
+    const dist = Math.abs(dragOffset.y);
     if (dist >= REMOVE_THRESH) {
       const newTypes = [...types];
       newTypes.splice(active.id, 1);
@@ -352,7 +352,7 @@ export default function PomodoroPanel() {
               <DragOverlay dropAnimation={null}>
                 {activeId !== null && (() => {
                   const dx = dragOffset.x, dy = dragOffset.y;
-                  const dist = Math.sqrt(dx * dx + dy * dy);
+                  const dist = Math.abs(dy);
                   const raw = Math.max(0, Math.min(1, (dist - REMOVE_DEAD) / (REMOVE_THRESH - REMOVE_DEAD)));
                   const isRemoving = dist >= REMOVE_THRESH;
                   return (

@@ -3,7 +3,7 @@ import { useApp } from '../../context/AppContext';
 import { createGoal } from '../../api/goals';
 
 export default function CreateGoalModal() {
-  const { projects, reloadGoals, addToast } = useApp();
+  const { projects, setGoals, addToast } = useApp();
   const [open, setOpen] = useState(false);
   const [name, setName] = useState('');
   const [proj, setProj] = useState('');
@@ -37,14 +37,14 @@ export default function CreateGoalModal() {
     setErr('');
     const pid = proj || null;
     try {
-      await createGoal({
+      const created = await createGoal({
         name: name.trim(), type, targetMs: ms, frequency: freq,
         endDate: noEnd ? null : until,
         currentMs: 0, lastResetDate: new Date().toISOString(),
         projectId: pid,
         projectName: pid ? projects.find(p => p._id === pid)?.name || null : null,
       });
-      await reloadGoals();
+      setGoals(prev => [created, ...prev]);
       addToast('Goal created!');
       close();
     } catch { addToast('Failed to create goal', 'err'); }

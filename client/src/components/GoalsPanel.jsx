@@ -5,13 +5,13 @@ import { deleteGoal } from '../api/goals';
 import { alert } from './modals/AlertModal';
 
 export default function GoalsPanel() {
-  const { goals, entries, reloadGoals, addToast } = useApp();
+  const { goals, entries, setGoals, addToast } = useApp();
 
   const handleDelete = async (id) => {
     if (!(await alert('Delete this goal?', true, true))) return;
     try {
       await deleteGoal(id);
-      await reloadGoals();
+      setGoals(prev => prev.filter(g => g._id !== id));
       addToast('Goal deleted.');
     } catch { addToast('Failed to delete', 'err'); }
   };

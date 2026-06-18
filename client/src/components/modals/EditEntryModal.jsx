@@ -3,7 +3,7 @@ import { useApp } from '../../context/AppContext';
 import { updateEntry } from '../../api/entries';
 
 export default function EditEntryModal() {
-  const { projects, entries, reloadEntries, addToast } = useApp();
+  const { projects, entries, setEntries, addToast } = useApp();
   const [open, setOpen] = useState(false);
   const [entryId, setEntryId] = useState(null);
   const [task, setTask] = useState('');
@@ -32,12 +32,12 @@ export default function EditEntryModal() {
     if (!task.trim()) { setErr('Task description is required.'); return; }
     setErr('');
     try {
-      await updateEntry(entryId, {
+      const updated = await updateEntry(entryId, {
         task: task.trim(),
         projectId: proj || null,
         projectName: proj ? projects.find(p => p._id === proj)?.name || null : null,
       });
-      await reloadEntries();
+      setEntries(prev => prev.map(e => e._id === entryId ? (updated || { ...e, task: task.trim(), projectId: proj || null }) : e));
       addToast('Entry updated!');
       close();
     } catch { addToast('Failed to update entry', 'err'); }

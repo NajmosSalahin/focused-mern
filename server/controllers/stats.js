@@ -435,16 +435,28 @@ exports.detailed = async (req, res) => {
 exports.weather = async (req, res) => {
   try {
     const snapshots = await WeatherSnapshot.find({ userId: req.userId }).sort({ date: -1 }).limit(90).lean();
+    if (!snapshots.length) {
+      return res.json({ paired: [], r: { temp: 0, humidity: 0, precip: 0, wind: 0 } });
+    }
+
+    const oldestDate = snapshots[snapshots.length - 1].date;
+    const entries = await Entry.find({
+      userId: req.userId,
+      startTime: { $gte: new Date(oldestDate) }
+    }).lean();
+
+    const entriesByDay = {};
+    for (const e of entries) {
+      const key = getDateStr(new Date(e.startTime));
+      if (!entriesByDay[key]) entriesByDay[key] = [];
+      entriesByDay[key].push(e);
+    }
+
     const pairs = [];
     for (const s of snapshots) {
-      const start = new Date(s.date);
-      const end = new Date(start);
-      end.setDate(end.getDate() + 1);
-      const entries = await Entry.find({
-        userId: req.userId,
-        startTime: { $gte: start, $lt: end }
-      }).lean();
-      const totalMs = sum(entries.map(e => e.durationMs || 0));
+      const key = getDateStr(new Date(s.date));
+      const dayEntries = entriesByDay[key] || [];
+      const totalMs = sum(dayEntries.map(e => e.durationMs || 0));
       const hours = totalMs / 3600000;
       pairs.push({
         date: s.date,

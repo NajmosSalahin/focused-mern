@@ -242,7 +242,7 @@ input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0;}
 
 /* THREE-COLUMN LAYOUT */
 .app-grid{display:grid;grid-template-columns:1fr 1.4fr 1fr;gap:10px;align-items:stretch;flex:1;min-height:0;margin-bottom:3px;}
-@media(max-width:900px){.app-grid{grid-template-columns:1fr;}}
+@media(max-width:900px){.app-grid{grid-template-columns:1fr;}.app{height:auto;min-height:100vh;overflow-y:auto;}.col-left>*,.col-center>*,.col-right>*{flex:none;height:auto;}}
 
 .col-left,.col-center,.col-right{display:flex;flex-direction:column;gap:10px;height:100%;min-height:0;}
 .col-left>*{flex:1;min-height:0;}
@@ -266,6 +266,8 @@ input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0;}
 .pomo-log-item .pl-mode.skipped{color:var(--bg3);}
 .pomo-log-item .pl-dur{color:var(--aqua-b);font-weight:700;margin-left:auto;}
 .pomo-log-item .pl-time{color:var(--fg-dim);font-size:9px;}
+.pomo-log-clear{background:none;border:none;color:var(--bg3);cursor:pointer;font-size:11px;padding:4px;border-radius:var(--r);transition:var(--t);margin-left:auto;}
+.pomo-log-clear:hover{color:var(--red-b);background:var(--bg);}
 
 /* POMO GOAL */
 .pg-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
@@ -610,6 +612,53 @@ input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0;}
   .pomo-svg{width:155px;height:155px;}
 }
 
+/* Touch-friendly minimum sizes for mobile */
+@media(max-width:768px){
+  .add-btn,.ea,.ia,.mcls,.date-nav button,.plan-add-btn,
+  .pbtn-sm,.dur-btn{min-width:44px;min-height:44px;font-size:13px;}
+  .ia{font-size:11px;}
+  .iacts{opacity:1!important;}
+}
+/* Collapse 10-column plan/session grids on mobile */
+@media(max-width:768px){
+  .pomo-plan-scroll{grid-template-columns:repeat(5,1fr);}
+  .sp-row{grid-template-columns:repeat(5,1fr);}
+}
+@media(max-width:480px){
+  .pomo-plan-scroll{grid-template-columns:repeat(3,1fr);}
+  .sp-row{grid-template-columns:repeat(3,1fr);}
+  .pomo-ctrls{gap:8px;}
+}
+/* Collapse grids that don't wrap on small screens */
+@media(max-width:600px){
+  .export-summary{grid-template-columns:1fr;}
+  .profile-stats-grid{grid-template-columns:repeat(2,1fr);}
+  .pr-row{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px;padding:6px 10px;}
+  .pr-rank{flex:0 0 16px;}
+  .pr-bar-wrap{flex:1;min-width:60px;}
+  .pr-name{flex:0 1 auto;}
+  .pr-time{flex:0 0 auto;}
+  .pr-count{width:100%;padding-left:24px;font-size:8px;color:var(--bg3);}
+}
+/* Reduce pomo panel left padding on small screens */
+@media(max-width:600px){
+  .pomo-header,.pomo-ctrls,.pomo-plan{padding-left:12px;}
+}
+
+/* Tighter spacing on small screens */
+@media(max-width:600px){
+  .app{padding:8px 10px;}
+  .header{padding:6px 10px;margin-bottom:6px;}
+  .task-bar{padding:6px 10px;margin-bottom:6px;}
+  .card{padding:10px;}
+  .app-grid{gap:6px;}
+  .date-label{min-width:auto;font-size:11px;}
+  .mhead{padding:10px 12px 0;}
+  .modal-body{padding:10px 12px;}
+  .hw-picker{width:calc(100vw - 24px);right:0;left:auto;}
+  .totals{flex-wrap:wrap;}
+}
+
 /* ── TERMINAL ───────────────────────────────────────────────────────── */
 .term-overlay{position:fixed;inset:0;background:rgba(20,18,16,.88);backdrop-filter:blur(4px);z-index:9999;display:none;align-items:center;justify-content:center;}
 .term-overlay.open{display:flex;}
@@ -779,13 +828,18 @@ kbd{
 .export-lbl { font-family: var(--mono); font-size: 10px; color: var(--fg-dim); }
 .export-val { font-family: var(--mono); font-size: 11px; font-weight: 700; color: var(--fg); }
 
-/* ── IMPORT ENHANCEMENTS ────────────────────────────────── */
-.file-input-wrap.drag-over { border-color: var(--aqua-b); background: rgba(131,165,152,.08); }
-.import-preview .radio-opt { display: flex; align-items: baseline; gap: 6px; font-family: var(--mono); font-size: 11px; }
-.radio-hint { font-size: 10px; color: var(--fg-dim); }
-.import-danger .radio-hint { color: var(--red-b); }
-.import-danger input:checked ~ span { color: var(--red-b); }
-.import-preview { margin-top: 8px; }
+/* ── IMPORT UI ──────────────────────────────────────────── */
+.import-dropzone{border:2px dashed var(--bg2);border-radius:var(--rl);padding:28px 20px;text-align:center;cursor:pointer;transition:var(--t);background:transparent;margin-bottom:8px;}
+.import-dropzone:hover{border-color:var(--bg3);background:var(--bg);}
+.import-dropzone.drag-over{border-color:var(--aqua-b);background:rgba(131,165,152,.06);}
+.import-icon{font-size:28px;color:var(--bg3);margin-bottom:6px;}
+.import-text{font-family:var(--mono);font-size:11px;color:var(--fg-dim);line-height:1.5;}
+.import-mode-options{display:flex;flex-direction:column;gap:6px;}
+.radio-row{display:flex;align-items:center;gap:10px;background:var(--bg);border:1px solid var(--bg2);border-radius:var(--r);padding:10px 12px;cursor:pointer;transition:border-color var(--t);}
+.radio-row:hover{border-color:var(--bg3);}
+.radio-row input[type=radio]{accent-color:var(--yellow-b);width:16px;height:16px;flex-shrink:0;cursor:pointer;}
+.radio-label{font-size:12px;color:var(--fg);line-height:1.4;}
+.radio-label b{color:var(--fg);}
 
 /* ── HEATMAP TODAY TREND BAR ────────────────────────────── */
 .hm-bar-today .hm-bar-lbl { color: var(--yellow-b); font-weight: 700; }
@@ -1021,6 +1075,18 @@ kbd{
 .set-section-title{font-family:var(--mono);font-size:9px;font-weight:700;letter-spacing:.8px;color:var(--fg-dim);text-transform:uppercase;margin-bottom:8px;}
 .set-section-title.set-danger{color:var(--red-b);}
 .set-value{font-family:var(--mono);font-size:12px;color:var(--fg-dim);}
+.profile-name-input{flex:1;max-width:220px;}
+.profile-stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:10px;}
+.profile-stat-card{background:var(--bg);border:1px solid var(--bg2);border-radius:var(--r);padding:10px 8px;display:flex;flex-direction:column;align-items:center;gap:2px;transition:border-color var(--t);}
+.profile-stat-card:hover{border-color:var(--bg3);}
+.profile-stat-icon{font-size:12px;color:var(--bg3);margin-bottom:1px;}
+.profile-stat-val{font-family:var(--mono);font-size:18px;font-weight:800;line-height:1.1;color:var(--fg);}
+.profile-stat-card:nth-child(1) .profile-stat-val{color:var(--yellow-b);}
+.profile-stat-card:nth-child(2) .profile-stat-val{color:var(--green-b);}
+.profile-stat-card:nth-child(3) .profile-stat-val{color:var(--blue-b);}
+.profile-stat-card:nth-child(4) .profile-stat-val{color:var(--purple-b);}
+.profile-stat-lbl{font-family:var(--mono);font-size:9px;font-weight:600;color:var(--fg-dim);letter-spacing:.6px;text-transform:uppercase;}
+.profile-member-since{font-family:var(--mono);font-size:11px;color:var(--fg-dim);text-align:center;padding:4px 0 2px;gap:5px;display:flex;align-items:center;justify-content:center;}
 
 /* Settings toggle switch */
 .stoggle{position:relative;display:inline-block;width:38px;height:22px;flex-shrink:0;}

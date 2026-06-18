@@ -99,9 +99,9 @@ export default function ImportModal() {
 
           {parsed && (
             <>
-              <hr className="mdivider" />
+              <hr className="set-divider" />
+              <div className="set-section-title"><i className="fas fa-chart-simple"></i> DATA PREVIEW</div>
               <div className="import-preview">
-                <div className="import-preview-title">Preview</div>
                 <div className="export-summary">
                   <div className="export-stat"><span className="export-label">Entries</span><span className="export-val">{entriesCount}</span></div>
                   <div className="export-stat"><span className="export-label">Projects</span><span className="export-val">{projCount}</span></div>
@@ -110,20 +110,17 @@ export default function ImportModal() {
                 </div>
               </div>
 
-              <hr className="mdivider" />
-
-              <div className="field">
-                <label>Import Mode</label>
-                <div className="import-mode-options">
-                  <label className="radio-row">
-                    <input type="radio" name="importMode" value="merge" checked={mode === 'merge'} onChange={() => setMode('merge')} />
-                    <span><b>Merge</b> — add imported data to existing data</span>
-                  </label>
-                  <label className="radio-row">
-                    <input type="radio" name="importMode" value="replace" checked={mode === 'replace'} onChange={() => setMode('replace')} />
-                    <span><b>Replace</b> — overwrite all existing data</span>
-                  </label>
-                </div>
+              <hr className="set-divider" />
+              <div className="set-section-title"><i className="fas fa-arrow-right-arrow-left"></i> IMPORT MODE</div>
+              <div className="import-mode-options">
+                <label className="radio-row">
+                  <input type="radio" name="importMode" value="merge" checked={mode === 'merge'} onChange={() => setMode('merge')} />
+                  <span className="radio-label"><b>Merge</b> — add imported data to existing data</span>
+                </label>
+                <label className="radio-row">
+                  <input type="radio" name="importMode" value="replace" checked={mode === 'replace'} onChange={() => setMode('replace')} />
+                  <span className="radio-label"><b>Replace</b> — overwrite all existing data</span>
+                </label>
               </div>
             </>
           )}

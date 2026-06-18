@@ -4,7 +4,7 @@ import { useApp } from '../../context/AppContext';
 
 export default function ProfileModal() {
   const { user, updateProfile } = useAuth();
-  const { addToast } = useApp();
+  const { projects, goals, entries, pomoSessions, addToast } = useApp();
   const [name, setName] = useState(user?.displayName || '');
   const [saving, setSaving] = useState(false);
 
@@ -14,17 +14,33 @@ export default function ProfileModal() {
   };
 
   const handleSave = async () => {
+    if (!name.trim()) { addToast('Enter a display name.', 'err'); return; }
     setSaving(true);
     try {
-      await updateProfile({ displayName: name });
+      await updateProfile({ displayName: name.trim() });
       addToast('Profile updated');
-      close();
     } catch {
       addToast('Failed to update profile', 'err');
     } finally {
       setSaving(false);
     }
   };
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter') { e.target.blur(); handleSave(); }
+    if (e.key === 'Escape') close();
+  };
+
+  const memberSince = user?.createdAt
+    ? new Date(user.createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+    : '—';
+
+  const stats = [
+    { val: projects.length, lbl: 'Projects', icon: 'fa-folder' },
+    { val: goals.length, lbl: 'Goals', icon: 'fa-bullseye' },
+    { val: entries.length, lbl: 'Entries', icon: 'fa-list-check' },
+    { val: pomoSessions.length, lbl: 'Pomodoros', icon: 'fa-fire' },
+  ];
 
   return (
     <div className="overlay" id="profileModal">
@@ -40,14 +56,23 @@ export default function ProfileModal() {
           </div>
           <div className="set-row">
             <span className="set-label">Display name</span>
-            <input className="auth-input" value={name} onChange={e => setName(e.target.value)} placeholder="Your name" />
+            <input className="auth-input profile-name-input" value={name} onChange={e => setName(e.target.value)} onKeyDown={handleKeyDown} placeholder="Your name" />
           </div>
-        </div>
-        <div className="mfoot">
-          <button className="btn btn-s" onClick={close}>CANCEL</button>
-          <button className="btn btn-p" onClick={handleSave} disabled={saving}>
-            {saving ? <i className="fas fa-circle-notch fa-spin"></i> : 'SAVE'}
-          </button>
+
+          <hr className="set-divider" />
+          <div className="set-section-title"><i className="fas fa-chart-simple"></i> ACCOUNT STATS</div>
+          <div className="profile-stats-grid">
+            {stats.map((s, i) => (
+              <div key={i} className="profile-stat-card">
+                <div className="profile-stat-icon"><i className={`fas ${s.icon}`}></i></div>
+                <div className="profile-stat-val">{s.val}</div>
+                <div className="profile-stat-lbl">{s.lbl}</div>
+              </div>
+            ))}
+          </div>
+          <div className="profile-member-since">
+            <i className="fas fa-calendar"></i> Member since {memberSince}
+          </div>
         </div>
       </div>
     </div>

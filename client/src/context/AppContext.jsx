@@ -57,6 +57,7 @@ export function AppProvider({ children }) {
   const [pomoRunning, setPomoRunning] = useState(false);
   const [sessionsD, setSessionsD] = useState(0);
   const [planIdx, setPlanIdx] = useState(0);
+  const [pomoCompleted, setPomoCompleted] = useState(0);
   const pomoIntervalRef = useRef(null);
   const pomoSettingsRef = useRef(pomoSettings);
   pomoSettingsRef.current = pomoSettings;
@@ -101,6 +102,7 @@ export function AppProvider({ children }) {
         initialIdx = totalDone % plan.length;
         const mode = plan[initialIdx];
         setPlanIdx(initialIdx);
+        setPomoCompleted(totalDone);
         setPomoMode(mode);
         const secs = mode === 'work' ? merged.work : mode === 'short' ? merged.short : merged.long;
         setPomoSec(secs);
@@ -138,33 +140,26 @@ export function AppProvider({ children }) {
   }, []);
 
   // Task tracker: start/stop/pause/resume
-  const startTracking = useCallback(async (task, projectId, projectName) => {
+  const startTracking = useCallback((task, projectId, projectName) => {
     const now = new Date();
     const newEntry = {
       task, projectId: projectId || null, projectName: projectName || null,
       startTime: now.toISOString(), segments: [], durationMs: 0,
       _id: uid()
     };
-    try {
-      const created = await entriesApi.createEntry(newEntry);
-      setActiveEntry(created._id ? created : { ...newEntry, _id: created._id || created.id });
-      setTaskStart(now);
-      setCurrentSegStart(now);
-      setTaskRunning(true);
-      setTaskPaused(false);
-      setLiveElapsed(0);
-      // start live interval
-      if (taskIntervalRef.current) clearInterval(taskIntervalRef.current);
-      taskIntervalRef.current = setInterval(() => {
-        setLiveElapsed(prev => prev + 1000);
-      }, 1000);
-      // Add to local entries list
-      setEntries(prev => [created._id ? created : { ...newEntry, _id: created._id || created.id }, ...prev]);
-      addToast('Timer started!');
-    } catch (err) {
-      addToast('Failed to start timer', 'err');
-    }
-  }, [addToast]);
+
+    setActiveEntry(newEntry);
+    setTaskStart(now);
+    setCurrentSegStart(now);
+    setTaskRunning(true);
+    setTaskPaused(false);
+    setLiveElapsed(0);
+    if (taskIntervalRef.current) clearInterval(taskIntervalRef.current);
+    taskIntervalRef.current = setInterval(() => {
+      setLiveElapsed(prev => prev + 1000);
+    }, 1000);
+    setEntries(prev => [newEntry, ...prev]);
+  }, []);
 
   const stopTracking = useCallback(async () => {
     if (!activeEntry) return;
@@ -175,35 +170,42 @@ export function AppProvider({ children }) {
     if (!taskPaused && currentSegStart) {
       segs.push({ start: currentSegStart.getTime(), end: end.getTime() });
     }
-    const totalMs = segs.reduce((s, seg) => s + (seg.end - seg.start), 0);
-    try {
-      await entriesApi.stopEntry(activeEntry._id);
-      if (segs.length > (activeEntry.segments || []).length) {
-        await entriesApi.addSegment(activeEntry._id, segs[segs.length - 1]);
-      }
-    } catch (err) { /* ignore */ }
+    const durationMs = segs.reduce((s, seg) => s + (seg.end - seg.start), 0);
+    const tempId = activeEntry._id;
+
+    // Stop UI immediately
     setActiveEntry(null);
     setTaskStart(null);
     setCurrentSegStart(null);
     setTaskRunning(false);
     setTaskPaused(false);
     setLiveElapsed(0);
+
+    // Single save on stop with complete data
+    try {
+      const created = await entriesApi.createEntry({
+        task: activeEntry.task,
+        projectId: activeEntry.projectId,
+        projectName: activeEntry.projectName,
+        startTime: activeEntry.startTime,
+        endTime: end.toISOString(),
+        segments: segs,
+        durationMs,
+        _id: tempId,
+      });
+      const realEntry = created._id ? created : { ...activeEntry, _id: created._id || created.id, endTime: end.toISOString(), segments: segs, durationMs };
+      setEntries(prev => prev.map(e => e._id === tempId ? realEntry : e));
+    } catch { /* server save failed, entry stays in local list */ }
     addToast('Timer stopped!');
-    // Refresh entries
-    const e = await entriesApi.fetchEntries().catch(() => []);
-    if (e) setEntries(e);
   }, [activeEntry, taskPaused, currentSegStart, addToast]);
 
-  const pauseTracking = useCallback(async () => {
+  const pauseTracking = useCallback(() => {
     if (!taskRunning || taskPaused || !activeEntry || !currentSegStart) return;
     clearInterval(taskIntervalRef.current);
     taskIntervalRef.current = null;
     const now = new Date();
     const seg = { start: currentSegStart.getTime(), end: now.getTime() };
     const newSegs = [...(activeEntry.segments || []), seg];
-    try {
-      await entriesApi.addSegment(activeEntry._id, seg);
-    } catch (err) { /* ignore */ }
     setActiveEntry(prev => ({ ...prev, segments: newSegs, durationMs: newSegs.reduce((s, sg) => s + (sg.end - sg.start), 0) }));
     setCurrentSegStart(null);
     setTaskPaused(true);
@@ -232,20 +234,32 @@ export function AppProvider({ children }) {
     if (!taskPausedRef.current && currentSegStartRef.current) {
       segs.push({ start: currentSegStartRef.current.getTime(), end: end.getTime() });
     }
-    entriesApi.stopEntry(entry._id).catch(() => {});
-    if (segs.length > (entry.segments || []).length) {
-      entriesApi.addSegment(entry._id, segs[segs.length - 1]).catch(() => {});
-    }
+    const durationMs = segs.reduce((s, seg) => s + (seg.end - seg.start), 0);
+    const tempId = entry._id;
+
     setActiveEntry(null);
     setTaskStart(null);
     setCurrentSegStart(null);
     setTaskRunning(false);
     setTaskPaused(false);
     setLiveElapsed(0);
-    entriesApi.fetchEntries().then(e => { if (e) setEntries(e); }).catch(() => {});
+
+    entriesApi.createEntry({
+      task: entry.task,
+      projectId: entry.projectId,
+      projectName: entry.projectName,
+      startTime: entry.startTime,
+      endTime: end.toISOString(),
+      segments: segs,
+      durationMs,
+      _id: tempId,
+    }).then(created => {
+      const realEntry = created._id ? created : { ...entry, _id: created._id || created.id, endTime: end.toISOString(), segments: segs, durationMs };
+      setEntries(prev => prev.map(e => e._id === tempId ? realEntry : e));
+    }).catch(() => {});
   }, []);
 
-  const focusStartTracking = useCallback(async (task, projectId, projectName) => {
+  const focusStartTracking = useCallback((task, projectId, projectName) => {
     focusStopTracking();
     const now = new Date();
     const newEntry = {
@@ -253,24 +267,18 @@ export function AppProvider({ children }) {
       startTime: now.toISOString(), segments: [], durationMs: 0,
       _id: uid()
     };
-    try {
-      const created = await entriesApi.createEntry(newEntry);
-      setActiveEntry(created._id ? created : { ...newEntry, _id: created._id || created.id });
-      setTaskStart(now);
-      setCurrentSegStart(now);
-      setTaskRunning(true);
-      setTaskPaused(false);
-      setLiveElapsed(0);
-      if (taskIntervalRef.current) clearInterval(taskIntervalRef.current);
-      taskIntervalRef.current = setInterval(() => {
-        setLiveElapsed(prev => prev + 1000);
-      }, 1000);
-      setEntries(prev => [created._id ? created : { ...newEntry, _id: created._id || created.id }, ...prev]);
-      addToast('Focus: timer started');
-    } catch {
-      addToast('Failed to start focus timer', 'err');
-    }
-  }, [addToast]);
+    setActiveEntry(newEntry);
+    setTaskStart(now);
+    setCurrentSegStart(now);
+    setTaskRunning(true);
+    setTaskPaused(false);
+    setLiveElapsed(0);
+    if (taskIntervalRef.current) clearInterval(taskIntervalRef.current);
+    taskIntervalRef.current = setInterval(() => {
+      setLiveElapsed(prev => prev + 1000);
+    }, 1000);
+    setEntries(prev => [newEntry, ...prev]);
+  }, []);
 
   const focusPauseTracking = useCallback(() => {
     if (!taskRunningRef.current || taskPausedRef.current || !activeEntryRef.current || !currentSegStartRef.current) return;
@@ -278,7 +286,6 @@ export function AppProvider({ children }) {
     taskIntervalRef.current = null;
     const now = new Date();
     const seg = { start: currentSegStartRef.current.getTime(), end: now.getTime() };
-    entriesApi.addSegment(activeEntryRef.current._id, seg).catch(() => {});
     setActiveEntry(prev => prev ? {
       ...prev,
       segments: [...(prev.segments || []), seg],
@@ -398,6 +405,7 @@ export function AppProvider({ children }) {
       setPomoMode(types[next]);
       return next;
     });
+    setPomoCompleted(prev => prev + 1);
   }, [pomoSettings]);
 
   const skipToNext = useCallback(() => {
@@ -424,6 +432,7 @@ export function AppProvider({ children }) {
         setPomoTotal(secs);
         return next;
       });
+      setPomoCompleted(prev => prev + 1);
     }
   }, [pomoSettings]);
 
@@ -531,6 +540,7 @@ export function AppProvider({ children }) {
     pomoIntervalRef.current = null;
     setPomoRunning(false);
     setSessionsD(0);
+    setPomoCompleted(0);
     pomoWorkStartRef.current = null;
     const types = getPlanTypes(pomoSettings);
     if (types.length > 0) {
@@ -541,6 +551,23 @@ export function AppProvider({ children }) {
       setPomoTotal(secs);
     }
   }, [pomoSettings]);
+
+  const clearTodayPomo = useCallback(async () => {
+    const todayKey = new Date().toISOString().split('T')[0];
+    setPomoSessions(prev => prev.filter(s => new Date(s.completedAt).toISOString().split('T')[0] !== todayKey));
+    setPomoCompleted(0);
+    setPlanIdx(0);
+    setSessionsD(0);
+    const types = getPlanTypes(pomoSettings);
+    if (types.length > 0) {
+      setPomoMode(types[0]);
+      const secs = types[0] === 'work' ? pomoSettings.work : types[0] === 'short' ? pomoSettings.short : pomoSettings.long;
+      setPomoSec(secs);
+      setPomoTotal(secs);
+    }
+    addToast('Today\'s sessions cleared');
+    try { await pomoApi.clearTodayPomo(); } catch { /* ignore */ }
+  }, [pomoSettings, addToast]);
 
   const value = {
     // Data
@@ -556,10 +583,10 @@ export function AppProvider({ children }) {
     isPomoControlled,
     setActiveEntry, setTaskRunning, setTaskPaused, setTaskStart, setCurrentSegStart,
     // Pomo
-    pomoMode, pomoSec, pomoTotal, pomoRunning, sessionsD, planIdx,
+    pomoMode, pomoSec, pomoTotal, pomoRunning, sessionsD, planIdx, pomoCompleted,
     startPomo, pausePomo, resetPomo, setPomoMode: setPomoModeFn,
     setPomoSec, setPomoTotal, setSessionsD, setPlanIdx,
-    advancePlan, skipToNext, resetAllPomo,
+    advancePlan, skipToNext, resetAllPomo, clearTodayPomo,
     // Reload
     reloadEntries, reloadProjects, reloadGoals, reloadPomo,
     setPomoDirect,
