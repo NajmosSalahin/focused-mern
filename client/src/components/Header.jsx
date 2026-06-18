@@ -31,8 +31,59 @@ export default function Header() {
   const [locResults, setLocResults] = useState([]);
   const [showLocPicker, setShowLocPicker] = useState(false);
   const [weatherLoc, setWeatherLoc] = useState(() => {
-    try { return JSON.parse(localStorage.getItem('wxLoc')) || { city: 'Detecting…' }; } catch { return { city: 'Detecting…' }; }
+    try { return JSON.parse(localStorage.getItem('wxLoc')); } catch { return null; }
   });
+
+  // Auto-detect location on first mount if no saved location
+  useEffect(() => {
+    if (weatherLoc) return;
+    // Try GPS first, fall back to IP geolocation
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const loc = { lat: pos.coords.latitude, lon: pos.coords.longitude, city: 'GPS…' };
+          setWeatherLoc(loc);
+          localStorage.setItem('wxLoc', JSON.stringify(loc));
+          // Reverse geocode via Nominatim to get city name
+          fetch(`https://nominatim.openstreetmap.org/reverse?lat=${pos.coords.latitude}&lon=${pos.coords.longitude}&format=json`)
+            .then(r => r.json())
+            .then(d => {
+              const a = d.address || {};
+              const city = a.city || a.town || a.village || a.county || a.state || 'Unknown';
+              const updated = { ...loc, city };
+              setWeatherLoc(updated);
+              localStorage.setItem('wxLoc', JSON.stringify(updated));
+            })
+            .catch(() => {});
+        },
+        () => {
+          // GPS failed — try IP geolocation
+          fetch('https://ipapi.co/json/')
+            .then(r => r.json())
+            .then(d => {
+              if (d.latitude != null && d.longitude != null) {
+                const loc = { lat: d.latitude, lon: d.longitude, city: d.city || d.region || 'Detected' };
+                setWeatherLoc(loc);
+                localStorage.setItem('wxLoc', JSON.stringify(loc));
+              }
+            })
+            .catch(() => setWeatherLoc({ city: 'Set location' }));
+        },
+        { timeout: 10000, enableHighAccuracy: false }
+      );
+    } else {
+      fetch('https://ipapi.co/json/')
+        .then(r => r.json())
+        .then(d => {
+          if (d.latitude != null && d.longitude != null) {
+            const loc = { lat: d.latitude, lon: d.longitude, city: d.city || d.region || 'Detected' };
+            setWeatherLoc(loc);
+            localStorage.setItem('wxLoc', JSON.stringify(loc));
+          }
+        })
+        .catch(() => setWeatherLoc({ city: 'Set location' }));
+    }
+  }, []);
 
   useEffect(() => {
     const t = setInterval(() => setTime(new Date()), 1000);
@@ -69,7 +120,7 @@ export default function Header() {
 
   useEffect(() => {
     const loc = weatherLoc;
-    if (loc.lat != null) fetchWeather(loc.lat, loc.lon);
+    if (loc && loc.lat != null) fetchWeather(loc.lat, loc.lon);
   }, [weatherLoc, fetchWeather]);
 
   // Search location
@@ -186,7 +237,7 @@ export default function Header() {
             <span className="hw-cond">{wxInfo ? wxInfo.l : '--'}</span>
             <span className="hw-sep">·</span>
             <i className="fas fa-location-dot hw-hum" style={{ fontSize: '9px' }}></i>
-            <span className="hw-city">{weatherLoc.city || '--'}</span>
+            <span className="hw-city">{weatherLoc ? weatherLoc.city : '--'}</span>
             <button className="hw-loc-btn" onClick={(e) => { e.stopPropagation(); setShowLocPicker(!showLocPicker); }}>
               <i className="fas fa-pen"></i>
             </button>

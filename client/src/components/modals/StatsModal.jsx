@@ -752,8 +752,11 @@ export default function StatsModal() {
     addToast('PDF report opened in new tab');
   };
 
+  const [weatherBusy, setWeatherBusy] = useState(false);
+
   const handleEnableWeather = () => {
     if (!navigator.geolocation) { addToast('Geolocation not available', 'err'); return; }
+    setWeatherBusy(true);
     navigator.geolocation.getCurrentPosition(
       async (pos) => {
         try {
@@ -775,9 +778,10 @@ export default function StatsModal() {
           loadWeather();
           addToast('Weather data enabled!');
         } catch { addToast('Failed to fetch weather', 'err'); }
+        setWeatherBusy(false);
       },
-      () => addToast('Location access denied', 'err'),
-      { timeout: 8000 }
+      () => { addToast('Location access denied or timed out', 'err'); setWeatherBusy(false); },
+      { timeout: 20000, enableHighAccuracy: false }
     );
   };
 
@@ -1435,8 +1439,8 @@ export default function StatsModal() {
                         <i className="fas fa-cloud-sun" style={{ marginRight: 6 }}></i>
                         Enable location access to track how weather affects your focus.
                       </p>
-                      <button className="btn btn-p" onClick={handleEnableWeather}>
-                        <i className="fas fa-location-dot"></i> ENABLE WEATHER STATS
+                      <button className="btn btn-p" onClick={handleEnableWeather} disabled={weatherBusy}>
+                        {weatherBusy ? <i className="fas fa-circle-notch fa-spin"></i> : <i className="fas fa-location-dot"></i>} {weatherBusy ? 'Detecting location…' : 'ENABLE WEATHER STATS'}
                       </button>
                       {weatherStats && weatherStats.paired && weatherStats.paired.length > 0 && (
                         <button className="btn btn-s" onClick={toggleWeather} style={{ marginLeft: 8 }}>
