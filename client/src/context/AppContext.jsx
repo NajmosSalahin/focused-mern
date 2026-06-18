@@ -366,13 +366,13 @@ export function AppProvider({ children }) {
           pomoWorkStartRef.current = null;
           // Advance plan
           pomoJustCompletedRef.current = true;
-          advancePlan();
+          advancePlanRef.current();
           return prev;
         }
         return prev - 1;
       });
     }, 1000);
-  }, [pomoMode, pomoTotal]);
+  }, [pomoMode, pomoTotal, advancePlan]);
 
   const pausePomo = useCallback(() => {
     clearInterval(pomoIntervalRef.current);
@@ -407,6 +407,8 @@ export function AppProvider({ children }) {
     });
     setPomoCompleted(prev => prev + 1);
   }, [pomoSettings]);
+  const advancePlanRef = useRef(advancePlan);
+  advancePlanRef.current = advancePlan;
 
   const skipToNext = useCallback(() => {
     const types = getPlanTypes(pomoSettings);

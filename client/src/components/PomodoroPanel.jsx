@@ -247,7 +247,7 @@ export default function PomodoroPanel() {
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
-  }, [pomoRunning, types, planIdx]);
+  }, [pomoRunning, types, planIdx, skipToNext]);
 
   // Close reset menu on outside click
   useEffect(() => {
