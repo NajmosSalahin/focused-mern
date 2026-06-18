@@ -209,13 +209,6 @@ export default function PomodoroPanel() {
       const newIdx = over.id;
       const newTypes = arrayMove(types, oldIdx, newIdx);
       saveTypes(newTypes);
-      if (oldIdx === planIdx) {
-        setPlanIdx(newIdx);
-      } else if (oldIdx < planIdx && newIdx >= planIdx) {
-        setPlanIdx(prev => prev - 1);
-      } else if (oldIdx > planIdx && newIdx <= planIdx) {
-        setPlanIdx(prev => prev + 1);
-      }
       addToast('Plan reordered');
     }
     setActiveId(null);
