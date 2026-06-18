@@ -973,6 +973,11 @@ kbd{
   align-items:center;gap:6px;padding:4px 0;transition:var(--t);
 }
 .auth-back-btn:hover{color:var(--fg);}
+.auth-forgot-btn{
+  background:none;border:none;color:var(--fg-dim);font-family:var(--mono);
+  font-size:11px;cursor:pointer;text-align:center;transition:var(--t);
+}
+.auth-forgot-btn:hover{color:var(--yellow);}
 .auth-logo{
   text-align:center;font-family:var(--mono);font-weight:800;
   font-size:22px;color:var(--yellow-b);letter-spacing:-.5px;
@@ -1001,6 +1006,12 @@ kbd{
 }
 .auth-submit:hover{background:var(--yellow-b);}
 .auth-submit:disabled{opacity:.5;cursor:not-allowed;}
+.auth-resend-btn{
+  background:none;border:1px solid var(--bg2);border-radius:var(--r);
+  padding:8px;color:var(--yellow);font-family:var(--mono);font-size:11px;
+  cursor:pointer;transition:var(--t);
+}
+.auth-resend-btn:hover{border-color:var(--yellow);}
 
 /* Settings & Profile modals */
 .set-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;gap:12px;}

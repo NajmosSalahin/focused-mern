@@ -33,10 +33,23 @@ export function AuthProvider({ children }) {
 
   const register = useCallback(async (email, password, displayName) => {
     const res = await api.post('/auth/register', { email, password, displayName });
-    localStorage.setItem(STORAGE_KEY, res.token);
-    setToken(res.token);
-    setUser(res.user);
-    return res.user;
+    return res;
+  }, []);
+
+  const verifyEmail = useCallback(async (token) => {
+    return api.get(`/auth/verify-email/${token}`);
+  }, []);
+
+  const resendVerification = useCallback(async (email) => {
+    return api.post('/auth/resend-verification', { email });
+  }, []);
+
+  const requestPasswordReset = useCallback(async (email) => {
+    return api.post('/auth/forgot-password', { email });
+  }, []);
+
+  const resetPassword = useCallback(async (token, password) => {
+    return api.post(`/auth/reset-password/${token}`, { password });
   }, []);
 
   const logout = useCallback(() => {
@@ -52,7 +65,7 @@ export function AuthProvider({ children }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, token, loading, login, register, logout, updateProfile }}>
+    <AuthContext.Provider value={{ user, token, loading, login, register, verifyEmail, resendVerification, requestPasswordReset, resetPassword, logout, updateProfile }}>
       {children}
     </AuthContext.Provider>
   );

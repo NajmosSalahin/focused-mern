@@ -5,6 +5,10 @@ const userSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true, lowercase: true, trim: true },
   password: { type: String, required: true, minlength: 6 },
   displayName: { type: String, trim: true, default: '' },
+  isVerified: { type: Boolean, default: false },
+  verificationToken: { type: String, default: null },
+  resetPasswordToken: { type: String, default: null },
+  resetPasswordExpires: { type: Date, default: null },
 }, { timestamps: true });
 
 userSchema.pre('save', async function (next) {
@@ -20,6 +24,9 @@ userSchema.methods.comparePassword = async function (candidate) {
 userSchema.methods.toJSON = function () {
   const obj = this.toObject();
   delete obj.password;
+  delete obj.verificationToken;
+  delete obj.resetPasswordToken;
+  delete obj.resetPasswordExpires;
   return obj;
 };
 

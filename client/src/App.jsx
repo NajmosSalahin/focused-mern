@@ -29,9 +29,16 @@ import ProfileModal from './components/modals/ProfileModal';
 import LandingPage from './components/LandingPage';
 import AuthPage from './components/AuthPage';
 
+function getPathToken(pattern) {
+  const m = window.location.pathname.match(pattern);
+  return m ? m[1] : null;
+}
+
 function AppContent() {
   const { user, loading } = useAuth();
-  const [showLanding, setShowLanding] = useState(true);
+  const urlVerifyToken = getPathToken(/^\/verify-email\/(.+)$/);
+  const urlResetToken = getPathToken(/^\/reset-password\/(.+)$/);
+  const [showLanding, setShowLanding] = useState(!urlVerifyToken && !urlResetToken);
   const [authMode, setAuthMode] = useState('login');
 
   if (loading) {
@@ -42,7 +49,7 @@ function AppContent() {
     if (showLanding) {
       return <LandingPage onGetStarted={() => { setShowLanding(false); setAuthMode('register'); }} onSignIn={() => { setShowLanding(false); setAuthMode('login'); }} />;
     }
-    return <AuthPage initialMode={authMode} onBackToLanding={() => setShowLanding(true)} />;
+    return <AuthPage initialMode={authMode} onBackToLanding={() => setShowLanding(true)} verifyToken={urlVerifyToken} resetToken={urlResetToken} />;
   }
 
   return (
