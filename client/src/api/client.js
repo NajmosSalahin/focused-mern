@@ -10,8 +10,10 @@ async function request(url, options = {}) {
   if (token) headers['Authorization'] = `Bearer ${token}`;
   const res = await fetch(`${BASE}${url}`, { headers, ...options });
   if (!res.ok) {
-    const err = await res.json().catch(() => ({ message: res.statusText }));
-    throw new Error(err.message || 'Request failed');
+    const body = await res.json().catch(() => ({ message: res.statusText }));
+    const err = new Error(body.message || 'Request failed');
+    Object.assign(err, body);
+    throw err;
   }
   return res.json();
 }

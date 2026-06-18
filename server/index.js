@@ -26,6 +26,12 @@ mongoose.connect(process.env.MONGODB_URI)
   .then(() => console.log('MongoDB connected'))
   .catch(err => console.error('MongoDB error:', err));
 
+if (!process.env.BREVO_API_KEY) {
+  console.warn('⚠ BREVO_API_KEY not set — emails will be logged to console only');
+} else {
+  console.log('✓ Brevo API configured');
+}
+
 // Public routes
 app.use('/api/auth', require('./routes/auth'));
 
