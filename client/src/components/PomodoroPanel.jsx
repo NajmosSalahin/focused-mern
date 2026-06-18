@@ -209,13 +209,6 @@ export default function PomodoroPanel() {
       const newIdx = over.id;
       const newTypes = arrayMove(types, oldIdx, newIdx);
       saveTypes(newTypes);
-      if (oldIdx === planIdx) {
-        setPlanIdx(newIdx);
-      } else if (oldIdx < planIdx && newIdx >= planIdx) {
-        setPlanIdx(prev => prev - 1);
-      } else if (oldIdx > planIdx && newIdx <= planIdx) {
-        setPlanIdx(prev => prev + 1);
-      }
       addToast('Plan reordered');
     }
     setActiveId(null);
@@ -225,11 +218,18 @@ export default function PomodoroPanel() {
   // Click-to-cycle block type
   const handleBlockClick = (idx) => {
     const cycleOrder = { work: 'short', short: 'long', long: 'work' };
-    const newTypes = [...types];
-    newTypes[idx] = cycleOrder[newTypes[idx]] || 'work';
-    const errs = validatePlan(newTypes);
-    if (errs.length > 0) { addToast(errs[0], 'err'); return; }
-    saveTypes(newTypes);
+    let current = types[idx];
+    const tried = new Set();
+    while (!tried.has(current)) {
+      tried.add(current);
+      const next = cycleOrder[current] || 'work';
+      const newTypes = [...types];
+      newTypes[idx] = next;
+      const errs = validatePlan(newTypes);
+      if (errs.length === 0) { saveTypes(newTypes); return; }
+      current = next;
+    }
+    addToast('Cannot change this block type', 'err');
   };
 
   // Keyboard: Space, R, S, 1, 2, 3
@@ -247,7 +247,7 @@ export default function PomodoroPanel() {
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
-  }, [pomoRunning, types, planIdx]);
+  }, [pomoRunning, types, planIdx, skipToNext]);
 
   // Close reset menu on outside click
   useEffect(() => {

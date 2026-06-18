@@ -366,7 +366,7 @@ export function AppProvider({ children }) {
           pomoWorkStartRef.current = null;
           // Advance plan
           pomoJustCompletedRef.current = true;
-          advancePlan();
+          advancePlanRef.current();
           return prev;
         }
         return prev - 1;
@@ -407,6 +407,8 @@ export function AppProvider({ children }) {
     });
     setPomoCompleted(prev => prev + 1);
   }, [pomoSettings]);
+  const advancePlanRef = useRef(advancePlan);
+  advancePlanRef.current = advancePlan;
 
   const skipToNext = useCallback(() => {
     const types = getPlanTypes(pomoSettings);
