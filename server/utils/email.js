@@ -62,7 +62,8 @@ async function send({ email, subject, text, htmlContent, url }) {
 }
 
 exports.sendVerificationEmail = (email, token) => {
-  const url = `${process.env.CLIENT_URL || 'http://localhost:5173'}/verify-email/${token}`;
+  const base = (process.env.CLIENT_URL || 'http://localhost:5173').replace(/\/+$/, '');
+  const url = `${base}/verify-email/${token}`;
   return send({
     email,
     subject: 'Verify your FOCUSED account',
@@ -78,7 +79,8 @@ exports.sendVerificationEmail = (email, token) => {
 };
 
 exports.sendPasswordResetEmail = (email, token) => {
-  const url = `${process.env.CLIENT_URL || 'http://localhost:5173'}/reset-password/${token}`;
+  const base = (process.env.CLIENT_URL || 'http://localhost:5173').replace(/\/+$/, '');
+  const url = `${base}/reset-password/${token}`;
   return send({
     email,
     subject: 'Reset your FOCUSED password',

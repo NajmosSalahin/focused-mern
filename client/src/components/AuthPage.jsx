@@ -110,7 +110,7 @@ export default function AuthPage({ initialMode, onBackToLanding, verifyToken: ur
           {verifyStatus === 'success' && (
             <>
               <p style={{ marginTop: 12, color: 'var(--green-b)' }}><i className="fas fa-check-circle"></i> Email verified! You can now sign in.</p>
-              <button className="auth-submit" style={{ marginTop: 12 }} onClick={() => { setMode('login'); window.history.replaceState(null, '', '/'); }}>
+              <button className="auth-submit" style={{ marginTop: 12 }} onClick={() => { window.location.href = '/'; }}>
                 Go to Sign In
               </button>
             </>
@@ -118,7 +118,7 @@ export default function AuthPage({ initialMode, onBackToLanding, verifyToken: ur
           {verifyStatus === 'error' && (
             <>
               <p style={{ marginTop: 12, color: 'var(--red)' }}>{error}</p>
-              <button className="auth-submit" style={{ marginTop: 12 }} onClick={() => { window.history.replaceState(null, '', '/'); setVerifyStatus(null); }}>
+              <button className="auth-submit" style={{ marginTop: 12 }} onClick={() => { window.location.href = '/'; }}>
                 Back to Sign In
               </button>
             </>
@@ -136,7 +136,7 @@ export default function AuthPage({ initialMode, onBackToLanding, verifyToken: ur
           {resetDone ? (
             <>
               <p style={{ textAlign: 'center', color: 'var(--green-b)' }}><i className="fas fa-check-circle"></i> Password reset successful!</p>
-              <button className="auth-submit" onClick={() => { window.history.replaceState(null, '', '/'); }}>
+              <button className="auth-submit" onClick={() => { window.location.href = '/'; }}>
                 Go to Sign In
               </button>
             </>
