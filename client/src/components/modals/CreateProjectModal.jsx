@@ -3,7 +3,7 @@ import { useApp } from '../../context/AppContext';
 import { createProject } from '../../api/projects';
 
 export default function CreateProjectModal() {
-  const { reloadProjects, addToast } = useApp();
+  const { setProjects, addToast } = useApp();
   const [open, setOpen] = useState(false);
   const [name, setName] = useState('');
   const [err, setErr] = useState('');
@@ -26,8 +26,8 @@ export default function CreateProjectModal() {
     if (!name.trim()) { setErr('Project name is required.'); return; }
     setErr('');
     try {
-      await createProject({ name: name.trim() });
-      await reloadProjects();
+      const created = await createProject({ name: name.trim() });
+      setProjects(prev => [created, ...prev]);
       addToast('Project created!');
       close();
     } catch { addToast('Failed to create project', 'err'); }

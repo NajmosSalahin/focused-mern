@@ -130,7 +130,7 @@ const CHART_COLORS = ['#458588', '#b16286', '#689d6a', '#d79921', '#cc241d', '#9
 const HEAT_COLORS = ['#282828', '#3c3836', '#504945', '#665c54', '#7c6f64', '#928374', '#a89984', '#bdae93', '#d5c4a1', '#ebdbb2'];
 
 export default function StatsModal() {
-  const { projects, goals, pomoSessions, addToast } = useApp();
+  const { projects, goals, pomoSessions, entries, addToast } = useApp();
   const [open, setOpen] = useState(false);
   const [range, setRange] = useState('30');
   const [loading, setLoading] = useState(false);
@@ -230,7 +230,7 @@ export default function StatsModal() {
         fetchDetailed(range),
         fetchAllDaily(),
         fetchAllPomo(),
-        import('../../api/entries').then(m => m.fetchEntries()),
+        Promise.resolve(entries),
       ]);
       const cached = {
         kpi: k || {}, daily: d || [], projStats: p || [], dowData: dw || [],
@@ -256,14 +256,13 @@ export default function StatsModal() {
     loadWeather();
   };
 
-  const loadWeather = async () => {
+  const loadWeather = () => {
     if (statsCache.current[range]?.weatherStats) return;
-    try {
-      const wx = await fetchWeatherStats();
+    fetchWeatherStats().then(wx => {
       setWeatherStats(wx);
       if (statsCache.current[range]) statsCache.current[range].weatherStats = wx;
       if (wx && wx.paired && wx.paired.length > 0) setShowWeather(true);
-    } catch { /* ignore */ }
+    }).catch(() => {});
   };
 
   // Animate KPI values on load

@@ -3,7 +3,7 @@ import { useApp } from '../../context/AppContext';
 import { updateProject } from '../../api/projects';
 
 export default function EditProjectModal() {
-  const { projects, reloadProjects, addToast } = useApp();
+  const { projects, setProjects, addToast } = useApp();
   const [open, setOpen] = useState(false);
   const [projId, setProjId] = useState(null);
   const [name, setName] = useState('');
@@ -29,8 +29,8 @@ export default function EditProjectModal() {
     if (!name.trim()) { setErr('Project name is required.'); return; }
     setErr('');
     try {
-      await updateProject(projId, { name: name.trim() });
-      await reloadProjects();
+      const updated = await updateProject(projId, { name: name.trim() });
+      setProjects(prev => prev.map(p => p._id === projId ? (updated || { ...p, name: name.trim() }) : p));
       addToast('Project updated!');
       close();
     } catch { addToast('Failed to update project', 'err'); }

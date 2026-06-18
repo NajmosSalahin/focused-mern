@@ -20,13 +20,9 @@ export default function SettingsModal() {
     if (!ok) return;
     setClock24h(true);
     setWeatherVisible(true);
-    try {
-      await updatePomoSettings(DEFAULT_POMO);
-      setPomoSettings(DEFAULT_POMO);
-      addToast('Settings reset to defaults');
-    } catch {
-      addToast('Failed to reset settings', 'err');
-    }
+    setPomoSettings(DEFAULT_POMO);
+    addToast('Settings reset to defaults');
+    updatePomoSettings(DEFAULT_POMO).catch(() => addToast('Failed to reset settings', 'err'));
   };
 
   const handleDeleteAll = async () => {

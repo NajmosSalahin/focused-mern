@@ -180,16 +180,11 @@ export default function PomoSettingsModal() {
     };
     const errs = validatePlan(settings.customPlan);
     if (errs.length > 0) { addToast(errs[0], 'err'); return; }
-    try {
-      await updatePomoSettings(settings);
-      setPomoSettings(settings);
-      addToast('Timer settings applied!');
-      setPomoMode(previewTypes[0] || 'work');
-      close();
-    } catch {
-      addToast('Failed to save settings', 'err');
-      close();
-    }
+    setPomoSettings(settings);
+    addToast('Timer settings applied!');
+    setPomoMode(previewTypes[0] || 'work');
+    close();
+    updatePomoSettings(settings).catch(() => addToast('Failed to save settings', 'err'));
   };
 
   const renderDurationField = (label, field, val, onChange) => (

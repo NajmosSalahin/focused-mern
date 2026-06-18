@@ -100,9 +100,8 @@ export default function Header() {
       const today = new Date().toISOString().slice(0, 10);
       if (!localStorage.getItem('wxSaved_' + today) && d.current) {
         const cur = d.current;
-        try {
-          const { saveWeather } = await import('../api/weather');
-          await saveWeather({
+        import('../api/weather').then(m => {
+          m.saveWeather({
             date: today,
             temp: cur.temperature_2m,
             humidity: cur.relative_humidity_2m,
@@ -111,9 +110,10 @@ export default function Header() {
             code: cur.weather_code,
             lat,
             lon,
-          });
-          localStorage.setItem('wxSaved_' + today, '1');
-        } catch { /* silent */ }
+          }).then(() => {
+            localStorage.setItem('wxSaved_' + today, '1');
+          }).catch(() => {});
+        }).catch(() => {});
       }
     } catch { setWeatherData(null); }
   }, []);

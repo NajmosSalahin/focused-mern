@@ -3,7 +3,7 @@ import { useApp } from '../../context/AppContext';
 import { updateGoal } from '../../api/goals';
 
 export default function EditGoalModal() {
-  const { projects, goals, reloadGoals, addToast } = useApp();
+  const { projects, goals, setGoals, addToast } = useApp();
   const [open, setOpen] = useState(false);
   const [goalId, setGoalId] = useState(null);
   const [name, setName] = useState('');
@@ -48,13 +48,13 @@ export default function EditGoalModal() {
     if (!noEnd && !until) { setErr('Select an end date or check no end date.'); return; }
     setErr('');
     try {
-      await updateGoal(goalId, {
+      const updated = await updateGoal(goalId, {
         name: name.trim(), type, targetMs: ms, frequency: freq,
         endDate: noEnd ? null : until,
         projectId: proj || null,
         projectName: proj ? projects.find(p => p._id === proj)?.name || null : null,
       });
-      await reloadGoals();
+      setGoals(prev => prev.map(g => g._id === goalId ? (updated || { ...g, name: name.trim() }) : g));
       addToast('Goal updated!');
       close();
     } catch { addToast('Failed to update goal', 'err'); }

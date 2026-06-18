@@ -6,7 +6,7 @@ import { alert } from './modals/AlertModal';
 
 export default function EntryList() {
   const [expanded, setExpanded] = useState({});
-  const { entries, viewDate, taskRunning, activeEntry, taskPaused, currentSegStart, liveElapsed, projects, reloadEntries, addToast } = useApp();
+  const { entries, viewDate, taskRunning, activeEntry, taskPaused, currentSegStart, liveElapsed, projects, setEntries, addToast } = useApp();
   const now = new Date();
   const isToday = sameDay(viewDate, now);
   const lbl = isToday ? 'TODAY' : viewDate.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }).toUpperCase();
@@ -19,7 +19,7 @@ export default function EntryList() {
     if (!(await alert('Delete this time entry?', true, true))) return;
     try {
       await deleteEntry(id);
-      await reloadEntries();
+      setEntries(prev => prev.filter(e => e._id !== id));
       addToast('Entry deleted.');
     } catch { addToast('Failed to delete', 'err'); }
   };

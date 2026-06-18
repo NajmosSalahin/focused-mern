@@ -4,7 +4,7 @@ import { deleteProject } from '../api/projects';
 import { alert } from './modals/AlertModal';
 
 export default function ProjectsPanel() {
-  const { projects, entries, taskRunning, activeEntry, reloadProjects, reloadEntries, addToast } = useApp();
+  const { projects, entries, taskRunning, activeEntry, setProjects, setEntries, addToast } = useApp();
 
   const handleDelete = async (id) => {
     const msg = taskRunning && activeEntry && activeEntry.projectId === id
@@ -13,8 +13,8 @@ export default function ProjectsPanel() {
     if (!(await alert(msg, true, true))) return;
     try {
       await deleteProject(id);
-      await reloadProjects();
-      await reloadEntries();
+      setProjects(prev => prev.filter(p => p._id !== id));
+      setEntries(prev => prev.map(e => e.projectId === id ? { ...e, projectId: null, projectName: null } : e));
       addToast('Project deleted.');
     } catch { addToast('Failed to delete', 'err'); }
   };
