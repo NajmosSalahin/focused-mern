@@ -23,7 +23,8 @@ const validatePlan = (types) => {
 
 function SortableBlock({ id, type, sec, state, isCur, onClick, children }) {
   const isDone = state === 'done';
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id, disabled: isDone });
+  const noDrag = isDone || window.innerWidth <= 768;
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id, disabled: noDrag });
 
   const style = {
     transform: CSS.Transform.toString(transform),

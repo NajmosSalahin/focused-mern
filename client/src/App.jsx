@@ -41,10 +41,6 @@ function AppContent() {
   const [showLanding, setShowLanding] = useState(!urlVerifyToken && !urlResetToken);
   const [authMode, setAuthMode] = useState('login');
 
-  if (loading) {
-    return <div className="app-loading"><i className="fas fa-circle-notch fa-spin"></i></div>;
-  }
-
   // Global Escape to close any modal overlay
   useEffect(() => {
     const handler = (e) => {
@@ -59,6 +55,10 @@ function AppContent() {
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
   }, []);
+
+  if (loading) {
+    return <div className="app-loading"><i className="fas fa-circle-notch fa-spin"></i></div>;
+  }
 
   if (!user) {
     if (showLanding) {

@@ -242,7 +242,7 @@ input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0;}
 
 /* THREE-COLUMN LAYOUT */
 .app-grid{display:grid;grid-template-columns:1fr 1.4fr 1fr;gap:10px;align-items:stretch;flex:1;min-height:0;margin-bottom:3px;}
-@media(max-width:900px){.app-grid{grid-template-columns:1fr;}}
+@media(max-width:900px){.app-grid{grid-template-columns:1fr;}.app{height:auto;min-height:100vh;overflow-y:auto;}.col-left>*,.col-center>*,.col-right>*{flex:none;height:auto;}}
 
 .col-left,.col-center,.col-right{display:flex;flex-direction:column;gap:10px;height:100%;min-height:0;}
 .col-left>*{flex:1;min-height:0;}
@@ -610,6 +610,53 @@ input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0;}
   .header-row3{flex-wrap:wrap;}
   .pomo-time{font-size:32px;}
   .pomo-svg{width:155px;height:155px;}
+}
+
+/* Touch-friendly minimum sizes for mobile */
+@media(max-width:768px){
+  .add-btn,.ea,.ia,.mcls,.date-nav button,.plan-add-btn,
+  .pbtn-sm,.dur-btn{min-width:44px;min-height:44px;font-size:13px;}
+  .ia{font-size:11px;}
+  .iacts{opacity:1!important;}
+}
+/* Collapse 10-column plan/session grids on mobile */
+@media(max-width:768px){
+  .pomo-plan-scroll{grid-template-columns:repeat(5,1fr);}
+  .sp-row{grid-template-columns:repeat(5,1fr);}
+}
+@media(max-width:480px){
+  .pomo-plan-scroll{grid-template-columns:repeat(3,1fr);}
+  .sp-row{grid-template-columns:repeat(3,1fr);}
+  .pomo-ctrls{gap:8px;}
+}
+/* Collapse grids that don't wrap on small screens */
+@media(max-width:600px){
+  .export-summary{grid-template-columns:1fr;}
+  .profile-stats-grid{grid-template-columns:repeat(2,1fr);}
+  .pr-row{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px;padding:6px 10px;}
+  .pr-rank{flex:0 0 16px;}
+  .pr-bar-wrap{flex:1;min-width:60px;}
+  .pr-name{flex:0 1 auto;}
+  .pr-time{flex:0 0 auto;}
+  .pr-count{width:100%;padding-left:24px;font-size:8px;color:var(--bg3);}
+}
+/* Reduce pomo panel left padding on small screens */
+@media(max-width:600px){
+  .pomo-header,.pomo-ctrls,.pomo-plan{padding-left:12px;}
+}
+
+/* Tighter spacing on small screens */
+@media(max-width:600px){
+  .app{padding:8px 10px;}
+  .header{padding:6px 10px;margin-bottom:6px;}
+  .task-bar{padding:6px 10px;margin-bottom:6px;}
+  .card{padding:10px;}
+  .app-grid{gap:6px;}
+  .date-label{min-width:auto;font-size:11px;}
+  .mhead{padding:10px 12px 0;}
+  .modal-body{padding:10px 12px;}
+  .hw-picker{width:calc(100vw - 24px);right:0;left:auto;}
+  .totals{flex-wrap:wrap;}
 }
 
 /* ── TERMINAL ───────────────────────────────────────────────────────── */

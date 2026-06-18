@@ -130,7 +130,7 @@ const CHART_COLORS = ['#458588', '#b16286', '#689d6a', '#d79921', '#cc241d', '#9
 const HEAT_COLORS = ['#282828', '#3c3836', '#504945', '#665c54', '#7c6f64', '#928374', '#a89984', '#bdae93', '#d5c4a1', '#ebdbb2'];
 
 export default function StatsModal() {
-  const { projects, goals, pomoSessions, entries, addToast } = useApp();
+  const { projects, goals, pomoSessions, entries: ctxEntries, addToast } = useApp();
   const [open, setOpen] = useState(false);
   const [range, setRange] = useState('30');
   const [loading, setLoading] = useState(false);
@@ -230,7 +230,7 @@ export default function StatsModal() {
         fetchDetailed(range),
         fetchAllDaily(),
         fetchAllPomo(),
-        Promise.resolve(entries),
+        Promise.resolve(ctxEntries),
       ]);
       const cached = {
         kpi: k || {}, daily: d || [], projStats: p || [], dowData: dw || [],

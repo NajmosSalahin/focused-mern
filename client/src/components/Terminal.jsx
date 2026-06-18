@@ -796,7 +796,7 @@ export default function Terminal() {
     r(['exit','quit','q'], () => { setOpen(false); }, { desc: 'Close terminal' });
 
     Object.assign(CMDS, c);
-  }, [CMDS, entries, projects, goals, pomoSessions, pomoRunning, pomoSec, pomoMode, pomoSettings, pomoGoalTarget, sessionsD, taskRunning, taskPaused, activeEntry, clock24h, termLine, startPomo, pausePomo, resetPomo, setPomoMode, startTracking, stopTracking, pauseTracking, resumeTracking, reloadEntries, reloadGoals, bootBanner, fmtMS, escHtml, projColor]);
+  }, [CMDS, entries, projects, goals, pomoSessions, pomoRunning, pomoSec, pomoMode, pomoSettings, pomoGoalTarget, sessionsD, taskRunning, taskPaused, activeEntry, clock24h, termLine, startPomo, pausePomo, resetPomo, setPomoMode, startTracking, stopTracking, pauseTracking, resumeTracking, bootBanner, fmtMS, escHtml, projColor]);
 
   const termExec = useCallback((raw) => {
     const trimmed = raw.trim();
