@@ -547,6 +547,25 @@ export function AppProvider({ children }) {
     }
   }, [pomoSettings]);
 
+  const clearTodayPomo = useCallback(async () => {
+    try {
+      await pomoApi.clearTodayPomo();
+    } catch { /* ignore */ }
+    const todayKey = new Date().toISOString().split('T')[0];
+    setPomoSessions(prev => prev.filter(s => new Date(s.completedAt).toISOString().split('T')[0] !== todayKey));
+    setPomoCompleted(0);
+    setPlanIdx(0);
+    setSessionsD(0);
+    const types = getPlanTypes(pomoSettings);
+    if (types.length > 0) {
+      setPomoMode(types[0]);
+      const secs = types[0] === 'work' ? pomoSettings.work : types[0] === 'short' ? pomoSettings.short : pomoSettings.long;
+      setPomoSec(secs);
+      setPomoTotal(secs);
+    }
+    addToast('Today\'s sessions cleared');
+  }, [pomoSettings, addToast]);
+
   const value = {
     // Data
     entries, projects, goals, pomoSessions, pomoSettings, pomoGoalTarget, loading,
@@ -564,7 +583,7 @@ export function AppProvider({ children }) {
     pomoMode, pomoSec, pomoTotal, pomoRunning, sessionsD, planIdx, pomoCompleted,
     startPomo, pausePomo, resetPomo, setPomoMode: setPomoModeFn,
     setPomoSec, setPomoTotal, setSessionsD, setPlanIdx,
-    advancePlan, skipToNext, resetAllPomo,
+    advancePlan, skipToNext, resetAllPomo, clearTodayPomo,
     // Reload
     reloadEntries, reloadProjects, reloadGoals, reloadPomo,
     setPomoDirect,

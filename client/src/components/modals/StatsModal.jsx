@@ -146,6 +146,7 @@ export default function StatsModal() {
   const [weatherStats, setWeatherStats] = useState(null);
   const [showWeather, setShowWeather] = useState(false);
   const [entries, setStatsEntries] = useState([]);
+  const statsCache = useRef({});
 
   // Heatmap data
   const [hmDaily, setHmDaily] = useState([]);
@@ -190,7 +191,28 @@ export default function StatsModal() {
     loadStats();
   }, [open, range]);
 
-  const loadStats = async () => {
+  const loadStats = async (forceRefresh = false) => {
+    const cacheKey = range;
+    if (!forceRefresh && statsCache.current[cacheKey]) {
+      const c = statsCache.current[cacheKey];
+      setKpi(c.kpi);
+      setDaily(c.daily);
+      setProjStats(c.projStats);
+      setDowData(c.dowData);
+      setHourHeat(c.hourHeat);
+      setPomoStats(c.pomoStats);
+      setDist(c.dist);
+      setInsights(c.insights);
+      setDetailed(c.detailed);
+      setHmDaily(c.hmDaily);
+      setHmPomo(c.hmPomo);
+      setStatsEntries(c.statsEntries);
+      if (c.weatherStats) {
+        setWeatherStats(c.weatherStats);
+        if (c.weatherStats.paired && c.weatherStats.paired.length > 0) setShowWeather(true);
+      }
+      return;
+    }
     setLoading(true);
     try {
       const [
@@ -210,27 +232,36 @@ export default function StatsModal() {
         fetchAllPomo(),
         import('../../api/entries').then(m => m.fetchEntries()),
       ]);
-      setKpi(k || {});
-      setDaily(d || []);
-      setProjStats(p || []);
-      setDowData(dw || []);
-      setHourHeat(hh || []);
-      setPomoStats(ps || []);
-      setDist(di?.buckets || di || []);
-      setInsights(ins || []);
-      setDetailed(det || {});
-      setHmDaily(allD || []);
-      setHmPomo(allP || []);
-      setStatsEntries(allE || []);
+      const cached = {
+        kpi: k || {}, daily: d || [], projStats: p || [], dowData: dw || [],
+        hourHeat: hh || [], pomoStats: ps || [], dist: di?.buckets || di || [],
+        insights: ins || [], detailed: det || {}, hmDaily: allD || [],
+        hmPomo: allP || [], statsEntries: allE || [],
+      };
+      statsCache.current[cacheKey] = cached;
+      setKpi(cached.kpi);
+      setDaily(cached.daily);
+      setProjStats(cached.projStats);
+      setDowData(cached.dowData);
+      setHourHeat(cached.hourHeat);
+      setPomoStats(cached.pomoStats);
+      setDist(cached.dist);
+      setInsights(cached.insights);
+      setDetailed(cached.detailed);
+      setHmDaily(cached.hmDaily);
+      setHmPomo(cached.hmPomo);
+      setStatsEntries(cached.statsEntries);
     } catch { addToast('Failed to load stats', 'err'); }
     setLoading(false);
     loadWeather();
   };
 
   const loadWeather = async () => {
+    if (statsCache.current[range]?.weatherStats) return;
     try {
       const wx = await fetchWeatherStats();
       setWeatherStats(wx);
+      if (statsCache.current[range]) statsCache.current[range].weatherStats = wx;
       if (wx && wx.paired && wx.paired.length > 0) setShowWeather(true);
     } catch { /* ignore */ }
   };

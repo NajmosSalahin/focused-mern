@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from './context/AuthContext';
 import { AppProvider } from './context/AppContext';
 import Header from './components/Header';
@@ -44,6 +44,21 @@ function AppContent() {
   if (loading) {
     return <div className="app-loading"><i className="fas fa-circle-notch fa-spin"></i></div>;
   }
+
+  // Global Escape to close any modal overlay
+  useEffect(() => {
+    const handler = (e) => {
+      if (e.key === 'Escape') {
+        const overlay = document.querySelector('.overlay.open:not([data-no-overlay-close])');
+        if (overlay) {
+          const btn = overlay.querySelector('.mcls');
+          if (btn) btn.click();
+        }
+      }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, []);
 
   if (!user) {
     if (showLanding) {

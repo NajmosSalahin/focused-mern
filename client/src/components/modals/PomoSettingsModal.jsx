@@ -28,18 +28,26 @@ export default function PomoSettingsModal() {
       setCycle(ps.cycle || 4);
       setAutoAdv(ps.autoAdv);
       setSoundEnabled(ps.soundEnabled !== false);
-      const slots = [];
-      for (let i = 0; i < (ps.cycle || 4); i++) {
-        const slot = i + 1;
-        const skipped = (ps.skipBreaks || []).includes(slot);
-        slots.push({ enabled: !skipped, type: 'short' });
-      }
-      if (ps.customPlan) {
+      if (ps.customPlan && ps.customPlan.length > 0) {
         setCustomPlan([...ps.customPlan]);
+        const slots = [];
+        let workCount = 0;
+        for (const t of ps.customPlan) {
+          if (t === 'work') workCount++;
+          else slots.push({ enabled: true, type: t });
+        }
+        setCycle(workCount);
+        setBreakSlots(slots.length >= 1 ? slots : [{ enabled: true, type: 'short' }]);
       } else {
         setCustomPlan(null);
+        const slots = [];
+        for (let i = 0; i < (ps.cycle || 4); i++) {
+          const slot = i + 1;
+          const skipped = (ps.skipBreaks || []).includes(slot);
+          slots.push({ enabled: !skipped, type: 'short' });
+        }
+        setBreakSlots(slots.length >= 1 ? slots : [{ enabled: true, type: 'short' }]);
       }
-      setBreakSlots(slots.length >= 1 ? slots : [{ enabled: true, type: 'short' }]);
       setOpen(true);
     };
     window.addEventListener('openPomoSettings', handler);
@@ -54,18 +62,26 @@ export default function PomoSettingsModal() {
     setCycle(pomoSettings.cycle || 4);
     setAutoAdv(pomoSettings.autoAdv);
     setSoundEnabled(pomoSettings.soundEnabled !== false);
-    const slots = [];
-    for (let i = 0; i < (pomoSettings.cycle || 4); i++) {
-      const slot = i + 1;
-      const skipped = (pomoSettings.skipBreaks || []).includes(slot);
-      slots.push({ enabled: !skipped, type: 'short' });
-    }
-    if (pomoSettings.customPlan) {
+    if (pomoSettings.customPlan && pomoSettings.customPlan.length > 0) {
       setCustomPlan([...pomoSettings.customPlan]);
+      const slots = [];
+      let workCount = 0;
+      for (const t of pomoSettings.customPlan) {
+        if (t === 'work') workCount++;
+        else slots.push({ enabled: true, type: t });
+      }
+      setCycle(workCount);
+      setBreakSlots(slots.length >= 1 ? slots : [{ enabled: true, type: 'short' }]);
     } else {
       setCustomPlan(null);
+      const slots = [];
+      for (let i = 0; i < (pomoSettings.cycle || 4); i++) {
+        const slot = i + 1;
+        const skipped = (pomoSettings.skipBreaks || []).includes(slot);
+        slots.push({ enabled: !skipped, type: 'short' });
+      }
+      setBreakSlots(slots.length >= 1 ? slots : [{ enabled: true, type: 'short' }]);
     }
-    setBreakSlots(slots.length >= 1 ? slots : [{ enabled: true, type: 'short' }]);
   }, [pomoSettings]);
 
   useEffect(() => {
@@ -152,9 +168,6 @@ export default function PomoSettingsModal() {
         newSkip.push(i + 1);
       }
     }
-    const planChanged = cycle !== (pomoSettings.cycle || 4);
-    const preservedPlan = !planChanged && pomoSettings.customPlan && pomoSettings.customPlan.length > 0
-      ? pomoSettings.customPlan : null;
     const settings = {
       work: newWork,
       short: newShort,
@@ -163,7 +176,7 @@ export default function PomoSettingsModal() {
       autoAdv,
       soundEnabled,
       skipBreaks: newSkip,
-      customPlan: preservedPlan || newPlan,
+      customPlan: newPlan,
     };
     const errs = validatePlan(settings.customPlan);
     if (errs.length > 0) { addToast(errs[0], 'err'); return; }
