@@ -42,7 +42,7 @@ function AppContent() {
     if (showLanding) {
       return <LandingPage onGetStarted={() => { setShowLanding(false); setAuthMode('register'); }} onSignIn={() => { setShowLanding(false); setAuthMode('login'); }} />;
     }
-    return <AuthPage initialMode={authMode} />;
+    return <AuthPage initialMode={authMode} onBackToLanding={() => setShowLanding(true)} />;
   }
 
   return (

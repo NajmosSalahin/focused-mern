@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 
-export default function AuthPage({ initialMode }) {
+export default function AuthPage({ initialMode, onBackToLanding }) {
   const { login, register } = useAuth();
   const [mode, setMode] = useState(initialMode || 'login');
   const [email, setEmail] = useState('');
@@ -30,6 +30,7 @@ export default function AuthPage({ initialMode }) {
   return (
     <div className="auth-page">
       <div className="auth-card">
+        <button className="auth-back-btn" onClick={onBackToLanding}><i className="fas fa-arrow-left"></i> Back</button>
         <div className="auth-logo">FOCUS<span className="auth-logo-sub">/ pomodoro + tracker</span></div>
         <div className="auth-tabs">
           <button className={`auth-tab ${mode === 'login' ? 'active' : ''}`} onClick={() => setMode('login')}>Sign In</button>

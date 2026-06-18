@@ -967,6 +967,12 @@ kbd{
   border:1px solid var(--bg2);border-radius:var(--rl);
   padding:32px;display:flex;flex-direction:column;gap:20px;
 }
+.auth-back-btn{
+  align-self:flex-start;background:none;border:none;color:var(--fg-dim);
+  font-family:var(--mono);font-size:12px;cursor:pointer;display:flex;
+  align-items:center;gap:6px;padding:4px 0;transition:var(--t);
+}
+.auth-back-btn:hover{color:var(--fg);}
 .auth-logo{
   text-align:center;font-family:var(--mono);font-weight:800;
   font-size:22px;color:var(--yellow-b);letter-spacing:-.5px;
