@@ -218,11 +218,18 @@ export default function PomodoroPanel() {
   // Click-to-cycle block type
   const handleBlockClick = (idx) => {
     const cycleOrder = { work: 'short', short: 'long', long: 'work' };
-    const newTypes = [...types];
-    newTypes[idx] = cycleOrder[newTypes[idx]] || 'work';
-    const errs = validatePlan(newTypes);
-    if (errs.length > 0) { addToast(errs[0], 'err'); return; }
-    saveTypes(newTypes);
+    let current = types[idx];
+    const tried = new Set();
+    while (!tried.has(current)) {
+      tried.add(current);
+      const next = cycleOrder[current] || 'work';
+      const newTypes = [...types];
+      newTypes[idx] = next;
+      const errs = validatePlan(newTypes);
+      if (errs.length === 0) { saveTypes(newTypes); return; }
+      current = next;
+    }
+    addToast('Cannot change this block type', 'err');
   };
 
   // Keyboard: Space, R, S, 1, 2, 3
