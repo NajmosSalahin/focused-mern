@@ -94,8 +94,13 @@ export function AppProvider({ children }) {
       setPomoSettings(merged);
       // Sync sessionsD and planIdx with server data, and sync pomoMode to plan
       const todayKey = new Date().toISOString().split('T')[0];
-      const totalDone = ps.filter(s => new Date(s.completedAt).toISOString().split('T')[0] === todayKey).length;
-      setSessionsD(ps.filter(s => s.mode === 'work' && new Date(s.completedAt).toISOString().split('T')[0] === todayKey).length);
+      const planResetAt = parseInt(localStorage.getItem('focused_planResetAt') || '0');
+      const todaySessions = ps.filter(s => new Date(s.completedAt).toISOString().split('T')[0] === todayKey);
+      const afterReset = planResetAt > 0
+        ? todaySessions.filter(s => new Date(s.completedAt).getTime() >= planResetAt)
+        : todaySessions;
+      const totalDone = afterReset.length;
+      setSessionsD(todaySessions.filter(s => s.mode === 'work').length);
       const plan = getPlanTypes(merged);
       let initialIdx = 0;
       if (plan.length > 0) {
@@ -544,6 +549,7 @@ export function AppProvider({ children }) {
     setSessionsD(0);
     setPomoCompleted(0);
     pomoWorkStartRef.current = null;
+    localStorage.setItem('focused_planResetAt', Date.now().toString());
     const types = getPlanTypes(pomoSettings);
     if (types.length > 0) {
       setPlanIdx(0);
