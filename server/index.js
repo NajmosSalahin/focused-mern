@@ -51,6 +51,10 @@ app.use('/api/notes', auth, require('./routes/notes'));
 app.use('/api/account', auth, require('./routes/account'));
 
 app.use(express.static(path.join(__dirname, '..', 'client', 'dist')));
+app.get('/sitemap.xml', (req, res) => {
+  res.set('Content-Type', 'text/xml');
+  res.sendFile(path.join(__dirname, '..', 'client', 'dist', 'sitemap.xml'));
+});
 app.get('*', (req, res) => res.sendFile(path.join(__dirname, '..', 'client', 'dist', 'index.html')));
 
 const PORT = process.env.PORT || 5000;
