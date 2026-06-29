@@ -459,7 +459,7 @@ export function AppProvider({ children }) {
       setPomoSec(secs);
       setPomoTotal(secs);
     }
-  }, [pomoMode, pomoSettings.work, pomoSettings.short, pomoSettings.long, pomoRunning]);
+  }, [pomoMode, pomoSettings.work, pomoSettings.short, pomoSettings.long]);
 
   // Sync pomoMode when plan structure changes (add/remove/reorder blocks)
   useEffect(() => {
