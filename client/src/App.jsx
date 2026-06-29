@@ -13,6 +13,7 @@ import Sidebar from './components/Sidebar';
 import CommandPalette from './components/CommandPalette';
 import Terminal from './components/Terminal';
 import ToastContainer from './components/ToastContainer';
+import SavingIndicator from './components/SavingIndicator';
 import AlertModal from './components/modals/AlertModal';
 import PomoSettingsModal from './components/modals/PomoSettingsModal';
 import CreateGoalModal from './components/modals/CreateGoalModal';
@@ -89,6 +90,7 @@ function AppContent() {
       <CommandPalette />
       <Terminal />
       <ToastContainer />
+      <SavingIndicator />
       {/* Modals */}
       <AlertModal />
       <PomoSettingsModal />

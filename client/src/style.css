@@ -604,6 +604,10 @@ input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0;}
 @keyframes tin{to{opacity:1;transform:translateY(0);}}
 @keyframes tout{to{opacity:0;transform:translateY(6px);}}
 
+/* SAVING INDICATOR */
+.saving-indicator{position:fixed;bottom:22px;right:22px;width:10px;height:10px;border:2px solid var(--bg3);border-top-color:var(--blue-b);border-radius:50%;opacity:0;transition:opacity .25s;z-index:9998;pointer-events:none;}
+.saving-indicator.visible{opacity:1;animation:saving-spin .6s linear infinite;}
+@keyframes saving-spin{to{transform:rotate(360deg);}}
 
 @media(max-width:600px){
   .header-row2{flex-wrap:wrap;}
