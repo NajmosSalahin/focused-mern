@@ -29,6 +29,7 @@ import SettingsModal from './components/modals/SettingsModal';
 import ProfileModal from './components/modals/ProfileModal';
 import LandingPage from './components/LandingPage';
 import AuthPage from './components/AuthPage';
+import FeaturePage from './components/FeaturePage';
 
 function getPathToken(pattern) {
   const m = window.location.pathname.match(pattern);
@@ -56,6 +57,13 @@ function AppContent() {
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
   }, []);
+
+  const publicSlugs = ['features', 'pomodoro-technique', 'task-tracking', 'goals', 'projects', 'habits', 'statistics'];
+  const currentSlug = publicSlugs.find(s => window.location.pathname === `/${s}`);
+
+  if (currentSlug) {
+    return <FeaturePage slug={currentSlug} onGetStarted={() => { setShowLanding(false); setAuthMode('register'); }} onSignIn={() => { setShowLanding(false); setAuthMode('login'); }} />;
+  }
 
   if (loading) {
     return <div className="app-loading"><i className="fas fa-circle-notch fa-spin"></i></div>;

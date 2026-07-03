@@ -38,6 +38,15 @@ export default function LandingPage({ onGetStarted, onSignIn }) {
       </section>
 
       <footer className="landing-footer">
+        <nav style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '20px', marginBottom: '12px' }}>
+          <a href="/features" style={{ color: 'var(--fg-dim)', textDecoration: 'none', fontWeight: 600, transition: 'var(--t)' }}>Features</a>
+          <a href="/pomodoro-technique" style={{ color: 'var(--fg-dim)', textDecoration: 'none', fontWeight: 600, transition: 'var(--t)' }}>Pomodoro</a>
+          <a href="/task-tracking" style={{ color: 'var(--fg-dim)', textDecoration: 'none', fontWeight: 600, transition: 'var(--t)' }}>Tasks</a>
+          <a href="/goals" style={{ color: 'var(--fg-dim)', textDecoration: 'none', fontWeight: 600, transition: 'var(--t)' }}>Goals</a>
+          <a href="/projects" style={{ color: 'var(--fg-dim)', textDecoration: 'none', fontWeight: 600, transition: 'var(--t)' }}>Projects</a>
+          <a href="/habits" style={{ color: 'var(--fg-dim)', textDecoration: 'none', fontWeight: 600, transition: 'var(--t)' }}>Habits</a>
+          <a href="/statistics" style={{ color: 'var(--fg-dim)', textDecoration: 'none', fontWeight: 600, transition: 'var(--t)' }}>Analytics</a>
+        </nav>
         <p>FOCUSED &mdash; open source productivity suite</p>
       </footer>
     </div>
