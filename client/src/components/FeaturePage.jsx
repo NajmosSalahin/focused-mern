@@ -156,7 +156,7 @@ export default function FeaturePage({ slug, onGetStarted, onSignIn }) {
   return (
     <div className="fp-page">
       <header className="fp-header">
-        <div className="fp-logo">FOCUS<span className="fp-logo-sub">/ {slug === 'features' ? 'features' : slug.replace(/-/g, ' ')}</span></div>
+        <a href="/" className="fp-logo" style={{ textDecoration: 'none' }}>FOCUS<span className="fp-logo-sub">/ {slug === 'features' ? 'features' : slug.replace(/-/g, ' ')}</span></a>
         <div className="fp-header-right">
           <a href="/" className="fp-back-link">&larr; Home</a>
           <button className="fp-cta-btn" onClick={onSignIn}>Sign In</button>
