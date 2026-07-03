@@ -12,7 +12,7 @@ export default function LandingPage({ onGetStarted, onSignIn }) {
   return (
     <div className="landing">
       <header className="landing-header">
-        <div className="landing-logo">FOCUS<span className="landing-logo-sub">/ pomodoro + tracker</span></div>
+        <a href="/" className="landing-logo" style={{ textDecoration: 'none' }}>FOCUS<span className="landing-logo-sub">/ pomodoro + tracker</span></a>
         <button className="landing-cta-btn" onClick={onSignIn}>Sign In</button>
       </header>
 
