@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://focused-4l3h.onrender.com/sitemap.xml
