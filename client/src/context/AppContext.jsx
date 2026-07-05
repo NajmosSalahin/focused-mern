@@ -78,6 +78,11 @@ export function AppProvider({ children }) {
 
   // Data loading
   const loadAll = useCallback(async () => {
+    const token = localStorage.getItem('focused_token');
+    if (!token) {
+      setLoading(false);
+      return;
+    }
     try {
       const [e, p, g, ps, pset] = await Promise.all([
         entriesApi.fetchEntries(),
@@ -317,6 +322,9 @@ export function AppProvider({ children }) {
 
   // Pomo timer
   const startPomo = useCallback(() => {
+    if ('Notification' in window && Notification.permission === 'default') {
+      Notification.requestPermission().catch(() => {});
+    }
     // Auto-start/resume TaskBar if focus is active and entering a work session
     if (pomoModeRef.current === 'work' && pomoSettingsRef.current.focusedTaskName) {
       if (taskRunningRef.current && taskPausedRef.current) {
@@ -516,13 +524,6 @@ export function AppProvider({ children }) {
       return () => window.removeEventListener('beforeunload', handler);
     }
   }, [taskRunning]);
-
-  // Request notification permission on mount
-  useEffect(() => {
-    if ('Notification' in window && Notification.permission === 'default') {
-      Notification.requestPermission().catch(() => {});
-    }
-  }, []);
 
   // Reload data functions
   const reloadEntries = useCallback(async () => {
