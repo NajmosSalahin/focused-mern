@@ -23,7 +23,7 @@ export default function GoalsPanel() {
     <div className="card card-scroll">
       <div className="chead">
         <div className="ctitle">GOALS</div>
-        <button className="add-btn" onClick={() => window.dispatchEvent(new CustomEvent('openCreateGoal'))}><i className="fas fa-plus"></i></button>
+        <button className="add-btn" onClick={() => window.dispatchEvent(new CustomEvent('openCreateGoal'))} aria-label="Create goal"><i className="fas fa-plus"></i></button>
       </div>
       <div id="goalList" role="list">
         {goals.length === 0 && <div className="empty">// no goals set</div>}
@@ -60,8 +60,8 @@ export default function GoalsPanel() {
               <div className="iacts">
                 <button className="ia ed" onClick={() => {
                   window.dispatchEvent(new CustomEvent('openEditGoal', { detail: g }));
-                }} title="Edit goal"><i className="fas fa-pen"></i></button>
-                <button className="ia dl" onClick={() => handleDelete(g._id)} title="Delete goal"><i className="fas fa-trash"></i></button>
+                }} title="Edit goal" aria-label="Edit goal"><i className="fas fa-pen"></i></button>
+                <button className="ia dl" onClick={() => handleDelete(g._id)} title="Delete goal" aria-label="Delete goal"><i className="fas fa-trash"></i></button>
               </div>
             </div>
           );

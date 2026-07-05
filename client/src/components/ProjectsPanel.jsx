@@ -23,7 +23,7 @@ export default function ProjectsPanel() {
     <div className="card card-scroll">
       <div className="chead">
         <div className="ctitle">PROJECTS</div>
-        <button className="add-btn" onClick={() => window.dispatchEvent(new CustomEvent('openCreateProject'))}><i className="fas fa-plus"></i></button>
+        <button className="add-btn" onClick={() => window.dispatchEvent(new CustomEvent('openCreateProject'))} aria-label="Create project"><i className="fas fa-plus"></i></button>
       </div>
       <div id="projList" role="list">
         {projects.length === 0 && <div className="empty">// no projects</div>}
@@ -40,8 +40,8 @@ export default function ProjectsPanel() {
               <div className="iacts">
                 <button className="ia ed" onClick={() => {
                   window.dispatchEvent(new CustomEvent('openEditProject', { detail: p }));
-                }} title="Edit project"><i className="fas fa-pen"></i></button>
-                <button className="ia dl" onClick={() => handleDelete(p._id)} title="Delete project"><i className="fas fa-trash"></i></button>
+                }} title="Edit project" aria-label="Edit project"><i className="fas fa-pen"></i></button>
+                <button className="ia dl" onClick={() => handleDelete(p._id)} title="Delete project" aria-label="Delete project"><i className="fas fa-trash"></i></button>
               </div>
             </div>
           );

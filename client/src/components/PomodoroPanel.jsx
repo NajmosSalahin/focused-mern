@@ -315,7 +315,7 @@ export default function PomodoroPanel() {
 
       <div className="pomo-ctrls">
         <div className="reset-wrap">
-          <button className="pbtn pbtn-sm" onClick={() => setShowResetMenu(!showResetMenu)} title="Reset (R)">
+          <button className="pbtn pbtn-sm" onClick={() => setShowResetMenu(!showResetMenu)} title="Reset (R)" aria-label="Reset timer">
             <i className="fas fa-redo"></i>
           </button>
           {showResetMenu && (
@@ -325,15 +325,15 @@ export default function PomodoroPanel() {
             </div>
           )}
         </div>
-        <button className={`pbtn pbtn-main${pomoRunning ? ' run' : ''}`} onClick={handleStartPause} title="Start/Pause (Space)">
+        <button className={`pbtn pbtn-main${pomoRunning ? ' run' : ''}`} onClick={handleStartPause} title="Start/Pause (Space)" aria-label="Start or pause timer">
           <i className={`fas fa-${pomoRunning ? 'pause' : 'play'}`}></i>
         </button>
-        <button className="pbtn pbtn-sm" onClick={skipToNext} title="Skip">
+        <button className="pbtn pbtn-sm" onClick={skipToNext} title="Skip" aria-label="Skip to next session">
           <i className="fas fa-forward-step"></i>
         </button>
         <button className="pbtn pbtn-sm" onClick={() => {
           window.dispatchEvent(new CustomEvent('openPomoSettings'));
-        }} title="Timer Settings">
+        }} title="Timer Settings" aria-label="Timer settings">
           <i className="fas fa-sliders"></i>
         </button>
       </div>
@@ -369,7 +369,7 @@ export default function PomodoroPanel() {
             <span className="plan-empty-hint">No blocks yet — add one below</span>
           )}
           <div className="plan-add-wrap">
-            <button className="plan-add-btn" onClick={() => setShowPlanMenu(!showPlanMenu)}>+</button>
+            <button className="plan-add-btn" onClick={() => setShowPlanMenu(!showPlanMenu)} aria-label="Add plan block">+</button>
             {showPlanMenu && (
               <div className="plan-add-menu">
                 {[['WORK', 'work'], ['SHORT', 'short'], ['LONG', 'long']].map(([label, t]) => (
@@ -400,7 +400,7 @@ export default function PomodoroPanel() {
               {pomoSettings.focusedTaskProjectName && (
                 <span className="focus-project">[{pomoSettings.focusedTaskProjectName}]</span>
               )}
-              <button className="focus-clear" onClick={clearFocus}
+              <button className="focus-clear" onClick={clearFocus} aria-label="Clear focus task"
                 disabled={pomoRunning && pomoMode === 'work'}>✕</button>
             </>
           ) : (
@@ -410,16 +410,16 @@ export default function PomodoroPanel() {
           )
         ) : (
           <div className="focus-editing-wrap">
-            <input ref={focusInputRef} className="focus-input" value={focusTask}
+            <input ref={focusInputRef} className="focus-input" value={focusTask} aria-label="Focus task"
               onChange={e => setFocusTask(e.target.value)}
               placeholder="What are you working on?"
               onKeyDown={e => { if (e.key === 'Enter') saveFocus(); if (e.key === 'Escape') setFocusEditing(false); }} />
-            <select className="focus-select" value={focusProject} onChange={e => setFocusProject(e.target.value)}>
+            <select className="focus-select" value={focusProject} onChange={e => setFocusProject(e.target.value)} aria-label="Focus project">
               <option value="">— no project —</option>
               {projects.map(p => <option key={p._id} value={p._id}>{p.name}</option>)}
             </select>
-            <button className="focus-save" onClick={saveFocus}>✔</button>
-            <button className="focus-cancel" onClick={() => setFocusEditing(false)}>✕</button>
+            <button className="focus-save" onClick={saveFocus} aria-label="Save focus task">✔</button>
+            <button className="focus-cancel" onClick={() => setFocusEditing(false)} aria-label="Cancel focus edit">✕</button>
           </div>
         )}
       </div>

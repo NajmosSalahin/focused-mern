@@ -22,7 +22,7 @@ export default function PomoLog() {
       <div className="chead">
         <div className="ctitle">POMO LOG — <b>{lbl}</b></div>
         {isToday && todaySessions.length > 0 && (
-          <button className="pomo-log-clear" onClick={handleClear} title="Clear today's sessions">
+          <button className="pomo-log-clear" onClick={handleClear} title="Clear today's sessions" aria-label="Clear today's sessions">
             <i className="fas fa-trash"></i>
           </button>
         )}

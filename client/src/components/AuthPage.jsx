@@ -143,7 +143,7 @@ export default function AuthPage({ initialMode, onBackToLanding, verifyToken: ur
           ) : (
             <form className="auth-form" onSubmit={handleResetPassword}>
               <p style={{ textAlign: 'center', fontSize: 13, color: 'var(--fg-dim)' }}>Enter your new password</p>
-              <input className="auth-input" type="password" placeholder="New password (min 6 chars)" value={newPassword}
+              <input className="auth-input" type="password" placeholder="New password (min 6 chars)" value={newPassword} aria-label="New password"
                 onChange={e => setNewPassword(e.target.value)} required minLength={6} />
               {error && <div className="auth-error">{error}</div>}
               <button className="auth-submit" type="submit" disabled={busy}>
@@ -201,7 +201,7 @@ export default function AuthPage({ initialMode, onBackToLanding, verifyToken: ur
               <p style={{ textAlign: 'center', fontSize: 13, color: 'var(--fg-dim)' }}>
                 Enter your email and we'll send you a reset link.
               </p>
-              <input className="auth-input" type="email" placeholder="Email" value={email} required
+              <input className="auth-input" type="email" placeholder="Email" value={email} required aria-label="Email address"
                 onChange={e => setEmail(e.target.value)} />
               {error && <div className="auth-error">{error}</div>}
               <button className="auth-submit" type="submit" disabled={busy}>
@@ -225,12 +225,12 @@ export default function AuthPage({ initialMode, onBackToLanding, verifyToken: ur
         </div>
         <form className="auth-form" onSubmit={handleSubmit}>
           {mode === 'register' && (
-            <input className="auth-input" placeholder="Display name" value={displayName}
+            <input className="auth-input" placeholder="Display name" value={displayName} aria-label="Display name"
               onChange={e => setDisplayName(e.target.value)} />
           )}
-          <input className="auth-input" type="email" placeholder="Email" value={email} required
+          <input className="auth-input" type="email" placeholder="Email" value={email} required aria-label="Email address"
             onChange={e => setEmail(e.target.value)} />
-          <input className="auth-input" type="password" placeholder="Password" value={password} required minLength={6}
+          <input className="auth-input" type="password" placeholder="Password" value={password} required minLength={6} aria-label="Password"
             onChange={e => setPassword(e.target.value)} />
           {error && <div className="auth-error">{error}</div>}
           {needsVerification && (

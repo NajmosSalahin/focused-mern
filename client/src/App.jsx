@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
 import { useAuth } from './context/AuthContext';
 import { AppProvider } from './context/AppContext';
 import Header from './components/Header';
@@ -14,22 +14,23 @@ import CommandPalette from './components/CommandPalette';
 import Terminal from './components/Terminal';
 import ToastContainer from './components/ToastContainer';
 import SavingIndicator from './components/SavingIndicator';
-import AlertModal from './components/modals/AlertModal';
-import PomoSettingsModal from './components/modals/PomoSettingsModal';
-import CreateGoalModal from './components/modals/CreateGoalModal';
-import EditGoalModal from './components/modals/EditGoalModal';
-import CreateProjectModal from './components/modals/CreateProjectModal';
-import EditProjectModal from './components/modals/EditProjectModal';
-import EditEntryModal from './components/modals/EditEntryModal';
-import ExportModal from './components/modals/ExportModal';
-import ImportModal from './components/modals/ImportModal';
-import StatsModal from './components/modals/StatsModal';
-import KeyboardShortcutsModal from './components/modals/KeyboardShortcutsModal';
-import SettingsModal from './components/modals/SettingsModal';
-import ProfileModal from './components/modals/ProfileModal';
 import LandingPage from './components/LandingPage';
 import AuthPage from './components/AuthPage';
 import FeaturePage from './components/FeaturePage';
+
+const AlertModal = lazy(() => import('./components/modals/AlertModal'));
+const PomoSettingsModal = lazy(() => import('./components/modals/PomoSettingsModal'));
+const CreateGoalModal = lazy(() => import('./components/modals/CreateGoalModal'));
+const EditGoalModal = lazy(() => import('./components/modals/EditGoalModal'));
+const CreateProjectModal = lazy(() => import('./components/modals/CreateProjectModal'));
+const EditProjectModal = lazy(() => import('./components/modals/EditProjectModal'));
+const EditEntryModal = lazy(() => import('./components/modals/EditEntryModal'));
+const ExportModal = lazy(() => import('./components/modals/ExportModal'));
+const ImportModal = lazy(() => import('./components/modals/ImportModal'));
+const StatsModal = lazy(() => import('./components/modals/StatsModal'));
+const KeyboardShortcutsModal = lazy(() => import('./components/modals/KeyboardShortcutsModal'));
+const SettingsModal = lazy(() => import('./components/modals/SettingsModal'));
+const ProfileModal = lazy(() => import('./components/modals/ProfileModal'));
 
 function getPathToken(pattern) {
   const m = window.location.pathname.match(pattern);
@@ -99,20 +100,21 @@ function AppContent() {
       <Terminal />
       <ToastContainer />
       <SavingIndicator />
-      {/* Modals */}
-      <AlertModal />
-      <PomoSettingsModal />
-      <CreateGoalModal />
-      <EditGoalModal />
-      <CreateProjectModal />
-      <EditProjectModal />
-      <EditEntryModal />
-      <ExportModal />
-      <ImportModal />
-      <StatsModal />
-      <KeyboardShortcutsModal />
-      <SettingsModal />
-      <ProfileModal />
+      <Suspense fallback={null}>
+        <AlertModal />
+        <PomoSettingsModal />
+        <CreateGoalModal />
+        <EditGoalModal />
+        <CreateProjectModal />
+        <EditProjectModal />
+        <EditEntryModal />
+        <ExportModal />
+        <ImportModal />
+        <StatsModal />
+        <KeyboardShortcutsModal />
+        <SettingsModal />
+        <ProfileModal />
+      </Suspense>
     </div>
   );
 }

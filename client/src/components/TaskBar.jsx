@@ -2,6 +2,9 @@ import { useState, useEffect, useRef } from 'react';
 import { useApp } from '../context/AppContext';
 import { fmt } from '../utils/helpers';
 
+const selectStyle = { background: 'var(--bg)', border: '1px solid var(--bg2)', color: 'var(--fg)', padding: '6px 8px', borderRadius: 'var(--r)', fontFamily: 'var(--mono)', fontSize: '11px', minWidth: '100px', maxWidth: '160px', cursor: 'pointer', outline: 'none' };
+const inputStyle = { flex: 1, minWidth: '120px', background: 'transparent', border: 'none', color: 'var(--fg)', fontFamily: 'var(--body)', fontSize: '15px', outline: 'none', padding: '6px 0' };
+
 export default function TaskBar() {
   const {
     projects, taskRunning, taskPaused, activeEntry, liveElapsed,
@@ -55,16 +58,16 @@ export default function TaskBar() {
 
   return (
     <div className="task-bar">
-      <select value={proj} onChange={e => setProj(e.target.value)} disabled={taskRunning}
-        style={{ background: 'var(--bg)', border: '1px solid var(--bg2)', color: 'var(--fg)', padding: '6px 8px', borderRadius: 'var(--r)', fontFamily: 'var(--mono)', fontSize: '11px', minWidth: '100px', maxWidth: '160px', cursor: 'pointer', outline: 'none' }}>
+      <select value={proj} onChange={e => setProj(e.target.value)} disabled={taskRunning} aria-label="Select project"
+        style={selectStyle}>
         <option value="">— no project —</option>
         {projects.map(p => <option key={p._id} value={p._id}>{p.name}</option>)}
       </select>
-      <input ref={inputRef} value={task} onChange={e => setTask(e.target.value)}
+      <input ref={inputRef} value={task} onChange={e => setTask(e.target.value)} aria-label="Task description"
         placeholder="What are you working on right now?"
         readOnly={taskRunning}
         onKeyDown={e => { if (e.key === 'Enter' && !taskRunning) handleStart(); }}
-        style={{ flex: 1, minWidth: '120px', background: 'transparent', border: 'none', color: 'var(--fg)', fontFamily: 'var(--body)', fontSize: '15px', outline: 'none', padding: '6px 0' }} />
+        style={inputStyle} />
       <span className={`live${!taskRunning ? ' off' : ''}`}>{fmt(liveMs || 0)}</span>
       {isPomoControlled && <span className="pomo-badge" title="Controlled by pomodoro focus">POMO</span>}
       {!taskRunning ? (

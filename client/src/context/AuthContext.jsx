@@ -16,7 +16,7 @@ export function AuthProvider({ children }) {
     if (token) {
       api.get('/auth/me')
         .then(u => { setUser(u); })
-        .catch(() => { setToken(null); localStorage.removeItem(STORAGE_KEY); })
+        .catch(() => { setToken(null); try { localStorage.removeItem(STORAGE_KEY); } catch {} })
         .finally(() => setLoading(false));
     } else {
       setLoading(false);
@@ -25,7 +25,7 @@ export function AuthProvider({ children }) {
 
   const login = useCallback(async (email, password) => {
     const res = await api.post('/auth/login', { email, password });
-    localStorage.setItem(STORAGE_KEY, res.token);
+    try { localStorage.setItem(STORAGE_KEY, res.token); } catch {}
     setToken(res.token);
     setUser(res.user);
     return res.user;
@@ -53,7 +53,7 @@ export function AuthProvider({ children }) {
   }, []);
 
   const logout = useCallback(() => {
-    localStorage.removeItem(STORAGE_KEY);
+    try { localStorage.removeItem(STORAGE_KEY); } catch {}
     setToken(null);
     setUser(null);
   }, []);

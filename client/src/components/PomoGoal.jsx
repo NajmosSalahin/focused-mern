@@ -34,9 +34,9 @@ export default function PomoGoal() {
         <div className="pg-bar" style={{ width: pct + '%', background: met ? 'var(--green-b)' : 'var(--yellow)' }}></div>
       </div>
       <div className="pg-set">
-        <button className="pg-nudge" onClick={() => { const v = Math.max(1, target - 1); setTarget(v); setPomoGoalTarget(v); }}>−</button>
-        <input type="number" min="1" max="24" value={target} onChange={e => setTarget(parseInt(e.target.value) || 8)} />
-        <button className="pg-nudge" onClick={() => { const v = Math.min(24, target + 1); setTarget(v); setPomoGoalTarget(v); }}>+</button>
+        <button className="pg-nudge" onClick={() => { const v = Math.max(1, target - 1); setTarget(v); setPomoGoalTarget(v); }} aria-label="Decrease goal">−</button>
+        <input type="number" min="1" max="24" value={target} onChange={e => setTarget(parseInt(e.target.value) || 8)} aria-label="Daily pomodoro goal" />
+        <button className="pg-nudge" onClick={() => { const v = Math.min(24, target + 1); setTarget(v); setPomoGoalTarget(v); }} aria-label="Increase goal">+</button>
         <button className="btn btn-s pg-set-btn" onClick={handleSet}>SET</button>
       </div>
     </div>
