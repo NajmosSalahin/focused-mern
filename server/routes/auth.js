@@ -4,7 +4,9 @@ const { rateLimit } = require('express-rate-limit');
 const ctrl = require('../controllers/auth');
 const { auth } = require('../middleware/auth');
 
-const handler = { message: 'Too many requests, please try again later.' };
+const handler = (req, res) => {
+  res.status(429).json({ message: 'Too many requests, please try again later.' });
+};
 
 // Credential-stuffing / brute-force protection on login and registration.
 const authLimiter = rateLimit({
