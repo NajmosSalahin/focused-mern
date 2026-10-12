@@ -624,7 +624,7 @@ export default function Terminal() {
       row(['Ctrl','Enter'], 'Start / Stop time tracking');
       row(['Ctrl','P'], 'Pause / Resume tracker');
       row(['['], 'Previous day');
-      row(['}'], 'Next day');
+      row([']'], 'Next day');
       row(['T'], 'Jump to today');
       tb();
       sec('TERMINAL','#8ec07c');

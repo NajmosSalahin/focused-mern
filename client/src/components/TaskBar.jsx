@@ -53,6 +53,37 @@ export default function TaskBar() {
     else resumeTracking();
   };
 
+  // Keyboard: N (focus input), Ctrl+Enter (start/stop), Ctrl+P (pause/resume)
+  useEffect(() => {
+    const handler = (e) => {
+      if (e.repeat || e.altKey) return;
+      const ctrl = e.ctrlKey || e.metaKey;
+
+      if (ctrl && e.key === 'Enter') {
+        e.preventDefault();
+        if (taskRunning) handleStop();
+        else if (!isPomoControlled) handleStart();
+        return;
+      }
+
+      if (ctrl && e.key.toLowerCase() === 'p') {
+        e.preventDefault();
+        if (taskRunning && !isPomoControlled) handlePause();
+        return;
+      }
+
+      if (!ctrl && (e.key === 'n' || e.key === 'N')) {
+        const tag = document.activeElement?.tagName;
+        if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+        if (document.querySelector('.overlay.open, .cmd-overlay.open')) return;
+        e.preventDefault();
+        inputRef.current?.focus();
+      }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  });
+
   const isRunning = taskRunning && !taskPaused;
   const isPaused = taskRunning && taskPaused;
 

@@ -18,11 +18,6 @@ export default function ExportModal() {
 
   const close = () => setOpen(false);
 
-  const handlePdf = () => {
-    window.open('/api/export/pdf', '_blank');
-    addToast('PDF opened in new tab');
-  };
-
   const handleJson = useCallback(async () => {
     if (jsonLoading) return;
     setJsonLoading(true);

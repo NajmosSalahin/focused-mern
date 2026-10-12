@@ -21,7 +21,8 @@ exports.create = async (req, res) => {
 
 exports.remove = async (req, res) => {
   try {
-    await Note.findByIdAndDelete(req.params.id);
+    const deleted = await Note.findOneAndDelete({ _id: req.params.id, userId: req.userId });
+    if (!deleted) return res.status(404).json({ message: 'Note not found' });
     res.json({ message: 'Note deleted' });
   } catch (err) {
     res.status(500).json({ message: err.message });

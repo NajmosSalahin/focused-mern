@@ -1,12 +1,12 @@
 import { useApp } from '../context/AppContext';
-import { fmtHuman } from '../utils/helpers';
+import { fmtHuman, dateKey } from '../utils/helpers';
 import { alert } from './modals/AlertModal';
 
 export default function PomoLog() {
   const { pomoSessions, viewDate, clearTodayPomo } = useApp();
-  const dateKey = viewDate.toISOString().split('T')[0];
-  const todaySessions = pomoSessions.filter(s => new Date(s.completedAt).toISOString().split('T')[0] === dateKey);
-  const isToday = new Date().toISOString().split('T')[0] === dateKey;
+  const viewKey = dateKey(viewDate);
+  const todaySessions = pomoSessions.filter(s => dateKey(new Date(s.completedAt)) === viewKey);
+  const isToday = dateKey(new Date()) === viewKey;
   const lbl = isToday
     ? 'TODAY'
     : viewDate.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }).toUpperCase();

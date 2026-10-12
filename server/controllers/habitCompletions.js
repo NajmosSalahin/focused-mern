@@ -27,7 +27,8 @@ exports.create = async (req, res) => {
 
 exports.remove = async (req, res) => {
   try {
-    await HabitCompletion.findByIdAndDelete(req.params.id);
+    const deleted = await HabitCompletion.findOneAndDelete({ _id: req.params.id, userId: req.userId });
+    if (!deleted) return res.status(404).json({ message: 'Completion not found' });
     res.json({ message: 'Completion deleted' });
   } catch (err) {
     res.status(500).json({ message: err.message });

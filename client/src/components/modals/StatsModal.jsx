@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useApp } from '../../context/AppContext';
-import { fmt, fmtHuman, WMO_INFO } from '../../utils/helpers';
+import { fmt, fmtHuman, dateKey, WMO_INFO } from '../../utils/helpers';
 import { generatePDFSummary } from '../../utils/pdf';
 import {
   fetchKpi, fetchDaily, fetchProjects as fetchProjStats, fetchDow,
@@ -97,10 +97,10 @@ function hmStreaks(dayMap) {
     const diff = (new Date(keys[i]) - new Date(keys[i - 1])) / 86400000;
     if (diff === 1) { cur++; longest = Math.max(longest, cur); } else cur = 1;
   }
-  const todayStr = new Date().toISOString().slice(0, 10);
+  const todayStr = dateKey(new Date());
   let d = new Date(), streak = 0;
   while (true) {
-    const k = d.toISOString().slice(0, 10);
+    const k = dateKey(d);
     if (dayMap[k] && dayMap[k].ms > 0) { streak++; d.setDate(d.getDate() - 1); } else break;
   }
   return { current: streak, longest, totalActiveDays: keys.length };
@@ -112,7 +112,7 @@ function hmBurnoutGaps(dayMap) {
   const start90 = new Date(today); start90.setDate(today.getDate() - 90);
   let gapStart = null, gapLen = 0;
   for (let d = new Date(start90); d <= today; d.setDate(d.getDate() + 1)) {
-    const k = d.toISOString().slice(0, 10);
+    const k = dateKey(d);
     if (!dayMap[k] || dayMap[k].ms === 0) {
       if (!gapStart) gapStart = new Date(d);
       gapLen++;
@@ -795,7 +795,7 @@ export default function StatsModal() {
           if (forecast?.current) {
             const cur = forecast.current;
             await saveWeather({
-              date: new Date().toISOString().slice(0, 10),
+              date: dateKey(new Date()),
               temp: cur.temperature_2m,
               humidity: cur.relative_humidity_2m,
               precip: cur.precipitation || 0,
@@ -837,7 +837,7 @@ export default function StatsModal() {
     });
 
     const today = new Date(); today.setHours(0, 0, 0, 0);
-    const todayKey = today.toISOString().slice(0, 10);
+    const todayKey = dateKey(today);
 
     // Date range: last 52 weeks aligned to Sunday
     const end = new Date(today); end.setDate(end.getDate() - end.getDay() + 6);
@@ -846,7 +846,7 @@ export default function StatsModal() {
 
     let maxMs = 0;
     for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
-      const k = d.toISOString().slice(0, 10);
+      const k = dateKey(d);
       if (dayMap[k]) maxMs = Math.max(maxMs, dayMap[k].ms);
     }
 
@@ -883,7 +883,7 @@ export default function StatsModal() {
     const bestHourStr = bestHourIdx >= 0 ? (bestHourIdx % 12 || 12) + (bestHourIdx >= 12 ? 'PM' : 'AM') : '--';
     let rangePomos = 0, rangeMs = 0;
     for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
-      const k = d.toISOString().slice(0, 10);
+      const k = dateKey(d);
       if (dayMap[k]) { rangePomos += dayMap[k].pomos || 0; rangeMs += dayMap[k].ms || 0; }
     }
 
@@ -891,7 +891,7 @@ export default function StatsModal() {
     const last7 = [];
     for (let i = 6; i >= 0; i--) {
       const d = new Date(today); d.setDate(today.getDate() - i);
-      const k = d.toISOString().slice(0, 10);
+      const k = dateKey(d);
       last7.push({ label: HM_DAYS[d.getDay()].slice(0, 3), ms: dayMap[k]?.ms || 0, isToday: i === 0 });
     }
     const maxDay = Math.max(...last7.map(d => d.ms), 1);
@@ -937,7 +937,7 @@ export default function StatsModal() {
               <div key={wi} className="hm-week">
                 {wk.map((day, di) => {
                   if (!day) return <div key={di} className="hm-cell empty"></div>;
-                  const k = day.toISOString().slice(0, 10);
+                  const k = dateKey(day);
                   const isFuture = day > today;
                   const data = dayMap[k];
                   const lvl = isFuture ? 'future' : hmLevel(data ? data.ms : 0, maxMs / 3600000);
@@ -1350,7 +1350,7 @@ export default function StatsModal() {
                         const totalDur = pomoSessions.reduce((s, p) => s + (p.duration || 0), 0);
                         const avgDur = completed > 0 ? Math.round(totalDur / completed) : 0;
                         const completionRate = total > 0 ? Math.round((completed / total) * 100) : 0;
-                        const uniqueDays = new Set(pomoSessions.map(s => s.completedAt ? new Date(s.completedAt).toISOString().slice(0, 10) : '')).size;
+                        const uniqueDays = new Set(pomoSessions.map(s => s.completedAt ? dateKey(new Date(s.completedAt)) : '')).size;
                         const dailyAvg = uniqueDays > 0 ? (total / uniqueDays).toFixed(1) : '0';
                         return (
                           <>

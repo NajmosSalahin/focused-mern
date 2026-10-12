@@ -1,5 +1,6 @@
 const Goal = require('../models/Goal');
 const Entry = require('../models/Entry');
+const { parseTz, startOfDay, startOfWeek, startOfMonth } = require('../utils/dates');
 
 exports.list = async (req, res) => {
   try {
@@ -22,7 +23,13 @@ exports.create = async (req, res) => {
 
 exports.update = async (req, res) => {
   try {
-    const updated = await Goal.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
+    const { _id, userId, ...updates } = req.body;
+    const updated = await Goal.findOneAndUpdate(
+      { _id: req.params.id, userId: req.userId },
+      updates,
+      { new: true, runValidators: true }
+    );
+    if (!updated) return res.status(404).json({ message: 'Goal not found' });
     res.json(updated);
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -31,7 +38,8 @@ exports.update = async (req, res) => {
 
 exports.remove = async (req, res) => {
   try {
-    await Goal.findByIdAndDelete(req.params.id);
+    const deleted = await Goal.findOneAndDelete({ _id: req.params.id, userId: req.userId });
+    if (!deleted) return res.status(404).json({ message: 'Goal not found' });
     res.json({ message: 'Goal deleted' });
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -40,6 +48,7 @@ exports.remove = async (req, res) => {
 
 exports.progress = async (req, res) => {
   try {
+    const tz = parseTz(req.query.tz);
     const goals = await Goal.find({ userId: req.userId });
     const now = new Date();
     const results = [];
@@ -47,16 +56,14 @@ exports.progress = async (req, res) => {
     for (const goal of goals) {
       let reset = false;
 
-      const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-      const startOfWeek = new Date(now);
-      startOfWeek.setDate(now.getDate() - ((now.getDay() + 6) % 7));
-      startOfWeek.setHours(0, 0, 0, 0);
-      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+      const dayStart = startOfDay(now, tz);
+      const weekStart = startOfWeek(now, tz);
+      const monthStart = startOfMonth(now, tz);
 
       if (goal.lastResetDate) {
-        if (goal.frequency === 'day' && goal.lastResetDate < startOfDay) reset = true;
-        else if (goal.frequency === 'week' && goal.lastResetDate < startOfWeek) reset = true;
-        else if (goal.frequency === 'month' && goal.lastResetDate < startOfMonth) reset = true;
+        if (goal.frequency === 'day' && goal.lastResetDate < dayStart) reset = true;
+        else if (goal.frequency === 'week' && goal.lastResetDate < weekStart) reset = true;
+        else if (goal.frequency === 'month' && goal.lastResetDate < monthStart) reset = true;
       }
 
       if (reset) {
@@ -65,9 +72,9 @@ exports.progress = async (req, res) => {
       }
 
       let periodStart;
-      if (goal.frequency === 'day') periodStart = startOfDay;
-      else if (goal.frequency === 'week') periodStart = startOfWeek;
-      else periodStart = startOfMonth;
+      if (goal.frequency === 'day') periodStart = dayStart;
+      else if (goal.frequency === 'week') periodStart = weekStart;
+      else periodStart = monthStart;
 
       const match = {};
       if (goal.projectId) match.projectId = goal.projectId;

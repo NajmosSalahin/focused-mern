@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useApp } from '../context/AppContext';
-import { fmt, sameDay, sameWeek, sameMon, WMO_INFO } from '../utils/helpers';
+import { fmt, sameDay, sameWeek, sameMon, dateKey, WMO_INFO } from '../utils/helpers';
 
 const navBtnStyle = { background: 'var(--bg1)', border: '1px solid var(--bg2)', color: 'var(--fg-dim)', width: '28px', height: '28px', borderRadius: 'var(--r)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px' };
 
@@ -97,7 +97,7 @@ export default function Header() {
       const d = await res.json();
       setWeatherData(d.current);
       // Auto-save daily snapshot for stats
-      const today = new Date().toISOString().slice(0, 10);
+      const today = dateKey(new Date());
       let wxSaved = false;
       try { wxSaved = !!localStorage.getItem('wxSaved_' + today); } catch {}
       if (!wxSaved && d.current) {

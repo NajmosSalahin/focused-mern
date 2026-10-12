@@ -46,11 +46,11 @@ async function mergeCollection(Model, items, userId) {
   for (const item of items) {
     const data = { ...item, userId };
     if (item._id) {
-      const exists = await Model.findById(item._id);
-      if (!exists) {
-        await Model.create(data);
-        count++;
-      }
+      const exists = await Model.findOne({ _id: item._id, userId });
+      if (exists) continue;
+      delete data._id;
+      await Model.create(data);
+      count++;
     } else {
       await Model.create(data);
       count++;

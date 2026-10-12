@@ -4,6 +4,7 @@ const Project = require('../models/Project');
 const Goal = require('../models/Goal');
 const Habit = require('../models/Habit');
 const WeatherSnapshot = require('../models/WeatherSnapshot');
+const { parseTz, dayKey, startOfDay, endOfDay, hourOfDay, weekdayMon } = require('../utils/dates');
 
 function sameDay(a, b) {
   return a.getFullYear() === b.getFullYear() &&
@@ -48,27 +49,25 @@ function slope(ys) {
   return m || 0;
 }
 
-function getDateStr(d) {
-  return d.toISOString().slice(0, 10);
+function getDateStr(d, tz) {
+  return dayKey(d, tz);
 }
 
-function buildDateRange(range) {
+function buildDateRange(range, tz) {
   const now = new Date();
-  const end = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
+  const end = endOfDay(now, tz);
   let start;
   if (range === 'all') start = new Date(0);
   else {
     const n = parseInt(range) || 30;
-    start = new Date(now);
-    start.setDate(start.getDate() - n);
-    start.setHours(0, 0, 0, 0);
+    start = startOfDay(new Date(now.getTime() - n * 86400000), tz);
   }
   return { start, end };
 }
 
-async function getStreaks(filter) {
+async function getStreaks(filter, tz) {
   const entries = await Entry.find(filter).sort({ startTime: 1 }).lean();
-  const days = [...new Set(entries.map(e => getDateStr(new Date(e.startTime))))].sort();
+  const days = [...new Set(entries.map(e => getDateStr(new Date(e.startTime), tz)))].sort();
   if (!days.length) return { current: 0, best: 0 };
 
   let best = 1, cur = 1;
@@ -84,8 +83,8 @@ async function getStreaks(filter) {
     }
   }
 
-  const todayStr = getDateStr(new Date());
-  const yesterdayStr = getDateStr(new Date(Date.now() - 86400000));
+  const todayStr = getDateStr(new Date(), tz);
+  const yesterdayStr = getDateStr(new Date(Date.now() - 86400000), tz);
   if (days[days.length - 1] !== todayStr && days[days.length - 1] !== yesterdayStr) {
     cur = 0;
   }
@@ -95,8 +94,9 @@ async function getStreaks(filter) {
 
 exports.kpi = async (req, res) => {
   try {
+    const tz = parseTz(req.query.tz);
     const range = req.query.range || '30';
-    const { start, end } = buildDateRange(range);
+    const { start, end } = buildDateRange(range, tz);
     const filter = { startTime: { $gte: start, $lte: end } };
 
     const entries = await Entry.find({ ...filter, userId: req.userId }).lean();
@@ -106,13 +106,12 @@ exports.kpi = async (req, res) => {
 
     const totalTime = sum(entries.map(e => e.durationMs || 0));
     const totalSessions = entries.length;
-    const daysSet = new Set(entries.map(e => getDateStr(new Date(e.startTime))));
+    const daysSet = new Set(entries.map(e => getDateStr(new Date(e.startTime), tz)));
     const trackedDays = daysSet.size;
     const avgDaily = trackedDays ? totalTime / trackedDays : 0;
     const totalPomos = pomos.length;
 
-    const allTime = await Entry.find({ userId: req.userId }).sort({ startTime: 1 }).lean();
-    const streaks = await getStreaks({ userId: req.userId });
+    const streaks = await getStreaks({ userId: req.userId }, tz);
 
     res.json({
       totalTime,
@@ -132,23 +131,22 @@ exports.kpi = async (req, res) => {
 
 exports.daily = async (req, res) => {
   try {
+    const tz = parseTz(req.query.tz);
     const days = parseInt(req.query.days) || 30;
     const now = new Date();
-    const start = new Date(now);
-    start.setDate(start.getDate() - days);
-    start.setHours(0, 0, 0, 0);
+    const start = startOfDay(new Date(now.getTime() - days * 86400000), tz);
 
     const entries = await Entry.find({ userId: req.userId, startTime: { $gte: start } }).lean();
     const dayMap = {};
     for (let i = 0; i < days; i++) {
       const d = new Date(now);
       d.setDate(d.getDate() - i);
-      const key = getDateStr(d);
+      const key = getDateStr(d, tz);
       dayMap[key] = { date: key, label: key.slice(5), hours: 0, ms: 0 };
     }
 
     for (const e of entries) {
-      const key = getDateStr(new Date(e.startTime));
+      const key = getDateStr(new Date(e.startTime), tz);
       if (dayMap[key]) {
         dayMap[key].ms += e.durationMs || 0;
         dayMap[key].hours = +(dayMap[key].ms / 3600000).toFixed(2);
@@ -179,12 +177,11 @@ exports.projects = async (req, res) => {
 
 exports.dow = async (req, res) => {
   try {
+    const tz = parseTz(req.query.tz);
     const entries = await Entry.find({ userId: req.userId }).lean();
     const dow = [0, 0, 0, 0, 0, 0, 0];
     for (const e of entries) {
-      const d = new Date(e.startTime);
-      const day = (d.getDay() + 6) % 7;
-      dow[day] += e.durationMs || 0;
+      dow[weekdayMon(new Date(e.startTime), tz)] += e.durationMs || 0;
     }
     res.json(dow);
   } catch (err) {
@@ -194,12 +191,11 @@ exports.dow = async (req, res) => {
 
 exports.hourHeatmap = async (req, res) => {
   try {
+    const tz = parseTz(req.query.tz);
     const entries = await Entry.find({ userId: req.userId }).lean();
     const hours = new Array(24).fill(0);
     for (const e of entries) {
-      const d = new Date(e.startTime);
-      const h = d.getHours();
-      hours[h] += e.durationMs || 0;
+      hours[hourOfDay(new Date(e.startTime), tz)] += e.durationMs || 0;
     }
     res.json(hours);
   } catch (err) {
@@ -209,22 +205,21 @@ exports.hourHeatmap = async (req, res) => {
 
 exports.pomo = async (req, res) => {
   try {
+    const tz = parseTz(req.query.tz);
     const days = parseInt(req.query.days) || 30;
     const now = new Date();
-    const start = new Date(now);
-    start.setDate(start.getDate() - days);
-    start.setHours(0, 0, 0, 0);
+    const start = startOfDay(new Date(now.getTime() - days * 86400000), tz);
 
     const sessions = await PomoSession.find({ userId: req.userId, completedAt: { $gte: start } }).lean();
     const dayMap = {};
     for (let i = 0; i < days; i++) {
       const d = new Date(now);
       d.setDate(d.getDate() - i);
-      const key = getDateStr(d);
+      const key = getDateStr(d, tz);
       dayMap[key] = { date: key, count: 0 };
     }
     for (const s of sessions) {
-      const key = getDateStr(new Date(s.completedAt));
+      const key = getDateStr(new Date(s.completedAt), tz);
       if (dayMap[key]) dayMap[key].count++;
     }
     res.json(Object.values(dayMap).reverse());
@@ -266,11 +261,10 @@ exports.distribution = async (req, res) => {
 
 exports.insights = async (req, res) => {
   try {
+    const tz = parseTz(req.query.tz);
     const range = parseInt(req.query.range) || 30;
     const now = new Date();
-    const start = new Date(now);
-    start.setDate(start.getDate() - range);
-    start.setHours(0, 0, 0, 0);
+    const start = startOfDay(new Date(now.getTime() - range * 86400000), tz);
 
     const entries = await Entry.find({ userId: req.userId, startTime: { $gte: start } }).lean();
     const pomos = await PomoSession.find({ userId: req.userId, completedAt: { $gte: start } }).lean();
@@ -278,7 +272,7 @@ exports.insights = async (req, res) => {
 
     const dailyMs = {};
     for (const e of entries) {
-      const key = getDateStr(new Date(e.startTime));
+      const key = getDateStr(new Date(e.startTime), tz);
       if (!dailyMs[key]) dailyMs[key] = 0;
       dailyMs[key] += e.durationMs || 0;
     }
@@ -289,15 +283,13 @@ exports.insights = async (req, res) => {
 
     const hours = new Array(24).fill(0);
     for (const e of entries) {
-      const h = new Date(e.startTime).getHours();
-      hours[h] += e.durationMs || 0;
+      hours[hourOfDay(new Date(e.startTime), tz)] += e.durationMs || 0;
     }
     const bestHour = hours.indexOf(Math.max(...hours));
 
     const dow = [0, 0, 0, 0, 0, 0, 0];
     for (const e of entries) {
-      const d = new Date(e.startTime);
-      dow[(d.getDay() + 6) % 7] += e.durationMs || 0;
+      dow[weekdayMon(new Date(e.startTime), tz)] += e.durationMs || 0;
     }
     const bestDow = dow.indexOf(Math.max(...dow));
     const dayNames = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
@@ -305,7 +297,7 @@ exports.insights = async (req, res) => {
     const cv = vals.length ? std(vals) / mean(vals) : 0;
     const consistency = cv < 0.5 ? 'high' : cv < 1 ? 'moderate' : 'low';
 
-    const streaks = await getStreaks({ userId: req.userId, startTime: { $gte: start } });
+    const streaks = await getStreaks({ userId: req.userId, startTime: { $gte: start } }, tz);
 
     const projectMap = {};
     for (const e of entries) {
@@ -359,18 +351,17 @@ exports.insights = async (req, res) => {
 
 exports.detailed = async (req, res) => {
   try {
+    const tz = parseTz(req.query.tz);
     const range = parseInt(req.query.range) || 30;
     const now = new Date();
-    const start = new Date(now);
-    start.setDate(start.getDate() - range);
-    start.setHours(0, 0, 0, 0);
+    const start = startOfDay(new Date(now.getTime() - range * 86400000), tz);
 
     const entries = await Entry.find({ userId: req.userId, startTime: { $gte: start } }).lean();
     const durSecs = entries.map(e => (e.durationMs || 0) / 1000).filter(v => v > 0);
 
     const dailyMs = {};
     for (const e of entries) {
-      const key = e.startTime.toISOString().slice(0, 10);
+      const key = getDateStr(new Date(e.startTime), tz);
       if (!dailyMs[key]) dailyMs[key] = 0;
       dailyMs[key] += e.durationMs || 0;
     }
@@ -406,8 +397,7 @@ exports.detailed = async (req, res) => {
     // Peak hour
     const hourMs = new Array(24).fill(0);
     for (const e of entries) {
-      const h = new Date(e.startTime).getHours();
-      hourMs[h] += e.durationMs || 0;
+      hourMs[hourOfDay(new Date(e.startTime), tz)] += e.durationMs || 0;
     }
     const peakHour = hourMs.indexOf(Math.max(...hourMs));
     const peakHourVal = hourMs[peakHour] || 0;
@@ -434,6 +424,7 @@ exports.detailed = async (req, res) => {
 
 exports.weather = async (req, res) => {
   try {
+    const tz = parseTz(req.query.tz);
     const snapshots = await WeatherSnapshot.find({ userId: req.userId }).sort({ date: -1 }).limit(90).lean();
     if (!snapshots.length) {
       return res.json({ paired: [], r: { temp: 0, humidity: 0, precip: 0, wind: 0 } });
@@ -447,14 +438,14 @@ exports.weather = async (req, res) => {
 
     const entriesByDay = {};
     for (const e of entries) {
-      const key = getDateStr(new Date(e.startTime));
+      const key = getDateStr(new Date(e.startTime), tz);
       if (!entriesByDay[key]) entriesByDay[key] = [];
       entriesByDay[key].push(e);
     }
 
     const pairs = [];
     for (const s of snapshots) {
-      const key = getDateStr(new Date(s.date));
+      const key = getDateStr(new Date(s.date), tz);
       const dayEntries = entriesByDay[key] || [];
       const totalMs = sum(dayEntries.map(e => e.durationMs || 0));
       const hours = totalMs / 3600000;
