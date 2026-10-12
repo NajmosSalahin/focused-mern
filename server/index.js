@@ -6,7 +6,18 @@ const path = require('path');
 const { auth } = require('./middleware/auth');
 
 const app = express();
-app.use(cors());
+
+// Render (and most PaaS hosts) terminate TLS at a proxy; without this every
+// request is keyed on the proxy's IP and rate limiting becomes a no-op.
+app.set('trust proxy', 1);
+
+// The SPA is served same-origin and Vite proxies /api in dev, so cross-origin
+// access only needs to be granted to explicitly configured origins.
+const allowedOrigins = (process.env.CORS_ORIGIN || 'https://focused-4l3h.onrender.com')
+  .split(',')
+  .map(s => s.trim())
+  .filter(Boolean);
+app.use(cors({ origin: allowedOrigins }));
 app.use(express.json({ limit: '10mb' }));
 
 app.use((req, res, next) => {
