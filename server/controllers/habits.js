@@ -25,7 +25,13 @@ exports.create = async (req, res) => {
 
 exports.update = async (req, res) => {
   try {
-    const updated = await Habit.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
+    const { _id, userId, ...updates } = req.body;
+    const updated = await Habit.findOneAndUpdate(
+      { _id: req.params.id, userId: req.userId },
+      updates,
+      { new: true, runValidators: true }
+    );
+    if (!updated) return res.status(404).json({ message: 'Habit not found' });
     res.json(updated);
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -34,8 +40,9 @@ exports.update = async (req, res) => {
 
 exports.remove = async (req, res) => {
   try {
-    await HabitCompletion.deleteMany({ habitId: req.params.id });
-    await Habit.findByIdAndDelete(req.params.id);
+    const deleted = await Habit.findOneAndDelete({ _id: req.params.id, userId: req.userId });
+    if (!deleted) return res.status(404).json({ message: 'Habit not found' });
+    await HabitCompletion.deleteMany({ habitId: req.params.id, userId: req.userId });
     res.json({ message: 'Habit deleted' });
   } catch (err) {
     res.status(500).json({ message: err.message });
