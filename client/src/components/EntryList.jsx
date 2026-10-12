@@ -68,8 +68,8 @@ export default function EntryList() {
                 <button className="ea ed" onClick={() => {
                   const toEdit = new CustomEvent('openEditEntry', { detail: e });
                   window.dispatchEvent(toEdit);
-                }} title="Edit entry"><i className="fas fa-pen"></i></button>
-                <button className="ea dl" onClick={() => handleDelete(e._id)} title="Delete entry"><i className="fas fa-trash"></i></button>
+                }} title="Edit entry" aria-label="Edit entry"><i className="fas fa-pen"></i></button>
+                <button className="ea dl" onClick={() => handleDelete(e._id)} title="Delete entry" aria-label="Delete entry"><i className="fas fa-trash"></i></button>
               </div>
               {isExpanded && hasSegments && (
                 <div className="e-segments">

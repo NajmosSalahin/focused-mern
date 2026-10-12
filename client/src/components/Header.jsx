@@ -1,9 +1,9 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
-
-
 import { useApp } from '../context/AppContext';
 import { fmt, sameDay, sameWeek, sameMon, WMO_INFO } from '../utils/helpers';
+
+const navBtnStyle = { background: 'var(--bg1)', border: '1px solid var(--bg2)', color: 'var(--fg-dim)', width: '28px', height: '28px', borderRadius: 'var(--r)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px' };
 
 export default function Header() {
   const { viewDate, setViewDate, clock24h, setClock24h, entries, taskRunning, taskStart, liveElapsed, activeEntry, addToast, weatherVisible } = useApp();
@@ -43,7 +43,7 @@ export default function Header() {
         (pos) => {
           const loc = { lat: pos.coords.latitude, lon: pos.coords.longitude, city: 'GPS…' };
           setWeatherLoc(loc);
-          localStorage.setItem('wxLoc', JSON.stringify(loc));
+          try { localStorage.setItem('wxLoc', JSON.stringify(loc)); } catch {}
           // Reverse geocode via Nominatim to get city name
           fetch(`https://nominatim.openstreetmap.org/reverse?lat=${pos.coords.latitude}&lon=${pos.coords.longitude}&format=json`)
             .then(r => r.json())
@@ -52,7 +52,7 @@ export default function Header() {
               const city = a.city || a.town || a.village || a.county || a.state || 'Unknown';
               const updated = { ...loc, city };
               setWeatherLoc(updated);
-              localStorage.setItem('wxLoc', JSON.stringify(updated));
+              try { localStorage.setItem('wxLoc', JSON.stringify(updated)); } catch {}
             })
             .catch(() => {});
         },
@@ -64,7 +64,7 @@ export default function Header() {
               if (d.latitude != null && d.longitude != null) {
                 const loc = { lat: d.latitude, lon: d.longitude, city: d.city || d.region || 'Detected' };
                 setWeatherLoc(loc);
-                localStorage.setItem('wxLoc', JSON.stringify(loc));
+                try { localStorage.setItem('wxLoc', JSON.stringify(loc)); } catch {}
               }
             })
             .catch(() => setWeatherLoc({ city: 'Set location' }));
@@ -78,7 +78,7 @@ export default function Header() {
           if (d.latitude != null && d.longitude != null) {
             const loc = { lat: d.latitude, lon: d.longitude, city: d.city || d.region || 'Detected' };
             setWeatherLoc(loc);
-            localStorage.setItem('wxLoc', JSON.stringify(loc));
+            try { localStorage.setItem('wxLoc', JSON.stringify(loc)); } catch {}
           }
         })
         .catch(() => setWeatherLoc({ city: 'Set location' }));
@@ -98,7 +98,9 @@ export default function Header() {
       setWeatherData(d.current);
       // Auto-save daily snapshot for stats
       const today = new Date().toISOString().slice(0, 10);
-      if (!localStorage.getItem('wxSaved_' + today) && d.current) {
+      let wxSaved = false;
+      try { wxSaved = !!localStorage.getItem('wxSaved_' + today); } catch {}
+      if (!wxSaved && d.current) {
         const cur = d.current;
         import('../api/weather').then(m => {
           m.saveWeather({
@@ -111,7 +113,7 @@ export default function Header() {
             lat,
             lon,
           }).then(() => {
-            localStorage.setItem('wxSaved_' + today, '1');
+            try { localStorage.setItem('wxSaved_' + today, '1'); } catch {}
           }).catch(() => {});
         }).catch(() => {});
       }
@@ -138,7 +140,7 @@ export default function Header() {
     const city = a.city || a.town || a.village || a.county || a.state || r.display_name.split(',')[0];
     const loc = { lat: parseFloat(r.lat), lon: parseFloat(r.lon), city };
     setWeatherLoc(loc);
-    localStorage.setItem('wxLoc', JSON.stringify(loc));
+    try { localStorage.setItem('wxLoc', JSON.stringify(loc)); } catch {}
     setShowLocPicker(false);
     setLocSearch('');
     setLocResults([]);
@@ -177,16 +179,13 @@ export default function Header() {
   const todayStr = viewDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
   const isToday = sameDay(viewDate, now);
 
-  const navStyle = { display: 'flex', alignItems: 'center', gap: '8px', fontFamily: 'var(--mono)', fontSize: '12px' };
-  const navBtn = { background: 'var(--bg1)', border: '1px solid var(--bg2)', color: 'var(--fg-dim)', width: '28px', height: '28px', borderRadius: 'var(--r)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px' };
-
   return (
     <div className="header">
       <div className="header-row1">
         <div className="logo">FOCUS <em>/ pomodoro + tracker</em></div>
         <div className="header-spacer"></div>
         <div className="profile-menu" ref={profileRef}>
-          <button className="profile-btn" onClick={() => setProfileOpen(!profileOpen)}>
+          <button className="profile-btn" onClick={() => setProfileOpen(!profileOpen)} aria-label="Profile menu">
             <i className="fas fa-user-circle"></i>
           </button>
           {profileOpen && (
@@ -212,14 +211,14 @@ export default function Header() {
       </div>
       <div className="header-row2">
         <div className="date-nav">
-          <button style={navBtn} onClick={() => { const d = new Date(viewDate); d.setDate(d.getDate() - 1); setViewDate(d); }}>
+          <button style={navBtnStyle} onClick={() => { const d = new Date(viewDate); d.setDate(d.getDate() - 1); setViewDate(d); }} aria-label="Previous day">
             <i className="fas fa-chevron-left"></i>
           </button>
           <span className="date-label">{todayStr}</span>
-          <button style={navBtn} onClick={() => setViewDate(new Date())}>
+          <button style={navBtnStyle} onClick={() => setViewDate(new Date())} aria-label="Jump to today">
             <i className="fas fa-calendar-check"></i>
           </button>
-          <button style={navBtn} onClick={() => { const d = new Date(viewDate); d.setDate(d.getDate() + 1); setViewDate(d); }}>
+          <button style={navBtnStyle} onClick={() => { const d = new Date(viewDate); d.setDate(d.getDate() + 1); setViewDate(d); }} aria-label="Next day">
             <i className="fas fa-chevron-right"></i>
           </button>
         </div>
@@ -238,12 +237,12 @@ export default function Header() {
             <span className="hw-sep">·</span>
             <i className="fas fa-location-dot hw-hum" style={{ fontSize: '9px' }}></i>
             <span className="hw-city">{weatherLoc ? weatherLoc.city : '--'}</span>
-            <button className="hw-loc-btn" onClick={(e) => { e.stopPropagation(); setShowLocPicker(!showLocPicker); }}>
+            <button className="hw-loc-btn" onClick={(e) => { e.stopPropagation(); setShowLocPicker(!showLocPicker); }} aria-label="Change location">
               <i className="fas fa-pen"></i>
             </button>
             {showLocPicker && (
               <div className="hw-picker">
-                <input className="hw-search" placeholder="Search city…" value={locSearch}
+                <input className="hw-search" placeholder="Search city…" value={locSearch} aria-label="Search city"
                   onChange={e => { setLocSearch(e.target.value); searchLoc(e.target.value); }} />
                 <div className="hw-results">
                   {locResults.length === 0 && locSearch.length < 2 && <div className="hw-result-item hw-result-hint">Type to search…</div>}

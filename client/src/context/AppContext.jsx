@@ -78,6 +78,11 @@ export function AppProvider({ children }) {
 
   // Data loading
   const loadAll = useCallback(async () => {
+    const token = localStorage.getItem('focused_token');
+    if (!token) {
+      setLoading(false);
+      return;
+    }
     try {
       const [e, p, g, ps, pset] = await Promise.all([
         entriesApi.fetchEntries(),
@@ -94,7 +99,8 @@ export function AppProvider({ children }) {
       setPomoSettings(merged);
       // Sync sessionsD and planIdx with server data, and sync pomoMode to plan
       const todayKey = new Date().toISOString().split('T')[0];
-      const planResetAt = parseInt(localStorage.getItem('focused_planResetAt') || '0');
+      let planResetAt = 0;
+      try { planResetAt = parseInt(localStorage.getItem('focused_planResetAt') || '0'); } catch {}
       const todaySessions = ps.filter(s => new Date(s.completedAt).toISOString().split('T')[0] === todayKey);
       const afterReset = planResetAt > 0
         ? todaySessions.filter(s => new Date(s.completedAt).getTime() >= planResetAt)
@@ -121,8 +127,7 @@ export function AppProvider({ children }) {
         if (loc && loc.lat != null) setWeatherLoc(loc);
       }).catch(() => {});
       // Load weather
-      const wxData = localStorage.getItem('wxData');
-      if (wxData) setWeatherData(JSON.parse(wxData));
+      try { const wxData = localStorage.getItem('wxData'); if (wxData) setWeatherData(JSON.parse(wxData)); } catch {}
     } catch (err) {
       console.error('Load failed:', err);
       addToast('Failed to load data', 'err');
@@ -134,8 +139,8 @@ export function AppProvider({ children }) {
   useEffect(() => { loadAll(); }, [loadAll]);
 
   // Persist view preferences
-  useEffect(() => { localStorage.setItem('focused_clock24h', JSON.stringify(clock24h)); }, [clock24h]);
-  useEffect(() => { localStorage.setItem('focused_weatherVisible', JSON.stringify(weatherVisible)); }, [weatherVisible]);
+  useEffect(() => { try { localStorage.setItem('focused_clock24h', JSON.stringify(clock24h)); } catch {} }, [clock24h]);
+  useEffect(() => { try { localStorage.setItem('focused_weatherVisible', JSON.stringify(weatherVisible)); } catch {} }, [weatherVisible]);
 
   // Toast
   const addToast = useCallback((msg, type = 'ok') => {
@@ -317,6 +322,9 @@ export function AppProvider({ children }) {
 
   // Pomo timer
   const startPomo = useCallback(() => {
+    if ('Notification' in window && Notification.permission === 'default') {
+      Notification.requestPermission().catch(() => {});
+    }
     // Auto-start/resume TaskBar if focus is active and entering a work session
     if (pomoModeRef.current === 'work' && pomoSettingsRef.current.focusedTaskName) {
       if (taskRunningRef.current && taskPausedRef.current) {
@@ -516,13 +524,6 @@ export function AppProvider({ children }) {
       return () => window.removeEventListener('beforeunload', handler);
     }
   }, [taskRunning]);
-
-  // Request notification permission on mount
-  useEffect(() => {
-    if ('Notification' in window && Notification.permission === 'default') {
-      Notification.requestPermission().catch(() => {});
-    }
-  }, []);
 
   // Reload data functions
   const reloadEntries = useCallback(async () => {

@@ -19,6 +19,10 @@ app.use((req, res, next) => {
     "script-src 'self' 'unsafe-inline'; " +
     "connect-src 'self' https://api.open-meteo.com https://nominatim.openstreetmap.org https://ipapi.co"
   );
+  res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
   next();
 });
 
@@ -27,7 +31,7 @@ mongoose.connect(process.env.MONGODB_URI)
   .catch(err => console.error('MongoDB error:', err));
 
 if (!process.env.BREVO_API_KEY) {
-  console.warn('⚠ BREVO_API_KEY not set — emails will be logged to console only');
+  if (process.env.NODE_ENV !== 'production') console.warn('⚠ BREVO_API_KEY not set — emails will be logged to console only');
 } else {
   console.log('✓ Brevo API configured');
 }
@@ -50,7 +54,13 @@ app.use('/api/import', auth, require('./routes/importData'));
 app.use('/api/notes', auth, require('./routes/notes'));
 app.use('/api/account', auth, require('./routes/account'));
 
-app.use(express.static(path.join(__dirname, '..', 'client', 'dist')));
+app.use(express.static(path.join(__dirname, '..', 'client', 'dist'), {
+  maxAge: '1y',
+  immutable: true,
+  setHeaders: (res, filePath) => {
+    if (filePath.endsWith('index.html')) res.setHeader('Cache-Control', 'no-cache');
+  }
+}));
 app.get('/sitemap.xml', (req, res) => {
   res.set('Content-Type', 'text/xml');
   res.sendFile(path.join(__dirname, '..', 'client', 'dist', 'sitemap.xml'));
