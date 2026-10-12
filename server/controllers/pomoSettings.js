@@ -14,9 +14,10 @@ exports.get = async (req, res) => {
 
 exports.update = async (req, res) => {
   try {
+    const { _id, userId, ...updates } = req.body;
     const settings = await PomoSetting.findOneAndUpdate(
       { userId: req.userId },
-      req.body,
+      updates,
       { new: true, upsert: true, runValidators: true }
     );
     res.json(settings);
