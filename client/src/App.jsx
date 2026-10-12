@@ -1,6 +1,7 @@
 import { useState, useEffect, lazy, Suspense } from 'react';
 import { useAuth } from './context/AuthContext';
 import { AppProvider } from './context/AppContext';
+import useHotkeys from './hooks/useHotkeys';
 import Header from './components/Header';
 import TaskBar from './components/TaskBar';
 import PomodoroPanel from './components/PomodoroPanel';
@@ -58,6 +59,8 @@ function AppContent() {
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
   }, []);
+
+  useHotkeys();
 
   const publicSlugs = ['features', 'pomodoro-technique', 'task-tracking', 'goals', 'projects', 'habits', 'statistics'];
   const currentSlug = publicSlugs.find(s => window.location.pathname === `/${s}`);
