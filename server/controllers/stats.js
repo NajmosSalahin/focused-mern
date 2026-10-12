@@ -2,7 +2,6 @@ const Entry = require('../models/Entry');
 const PomoSession = require('../models/PomoSession');
 const Project = require('../models/Project');
 const Goal = require('../models/Goal');
-const Habit = require('../models/Habit');
 const WeatherSnapshot = require('../models/WeatherSnapshot');
 const { parseTz, dayKey, startOfDay, endOfDay, hourOfDay, weekdayMon } = require('../utils/dates');
 
@@ -268,7 +267,6 @@ exports.insights = async (req, res) => {
 
     const entries = await Entry.find({ userId: req.userId, startTime: { $gte: start } }).lean();
     const pomos = await PomoSession.find({ userId: req.userId, completedAt: { $gte: start } }).lean();
-    const habits = await Habit.find({ userId: req.userId }).lean();
 
     const dailyMs = {};
     for (const e of entries) {
@@ -311,23 +309,6 @@ exports.insights = async (req, res) => {
       .slice(0, 3)
       .map(([name]) => name);
 
-    const habitCompletions = await require('../models/HabitCompletion').find({
-      userId: req.userId,
-      createdAt: { $gte: start }
-    }).lean();
-    const habitCounts = {};
-    for (const hc of habitCompletions) {
-      const h = habits.find(x => x._id.toString() === hc.habitId.toString());
-      if (h) {
-        if (!habitCounts[h.name]) habitCounts[h.name] = 0;
-        habitCounts[h.name]++;
-      }
-    }
-    const topHabits = Object.entries(habitCounts)
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 3)
-      .map(([name]) => name);
-
     const totalMs = sum(vals);
     const totalHours = (totalMs / 3600000).toFixed(1);
 
@@ -341,8 +322,7 @@ exports.insights = async (req, res) => {
       totalHours: parseFloat(totalHours),
       trackedDays: vals.length,
       totalPomos: pomos.length,
-      topProjects,
-      topHabits
+      topProjects
     });
   } catch (err) {
     res.status(500).json({ message: err.message });

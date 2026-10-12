@@ -62,8 +62,7 @@ FOCUS is a full-stack productivity app built on the MERN stack. Instead of treat
 - A **Delete all data** action in Settings.
 
 ### Also included
-- Public marketing pages (`/features`, `/pomodoro-technique`, `/task-tracking`, `/goals`, `/projects`, `/habits`, `/statistics`) with `sitemap.xml` and `robots.txt`.
-- Backend models and API routes for **habits** and **notes** (no dedicated UI yet; see [Known Limitations](#known-limitations)).
+- Public marketing pages (`/features`, `/pomodoro-technique`, `/task-tracking`, `/goals`, `/projects`, `/statistics`) with `sitemap.xml` and `robots.txt`.
 
 ---
 
@@ -237,8 +236,6 @@ All routes are under `/api`. Everything except `/api/auth/*` requires an `Author
 | Projects | `GET/POST /projects`, `PUT/DELETE /projects/:id` |
 | Goals | `GET/POST /goals`, `PUT/DELETE /goals/:id`, `GET /goals/progress` |
 | Pomodoro | `GET/POST /pomo-sessions`, `DELETE /pomo-sessions/today`, `GET/PUT /pomo-settings` |
-| Habits | `GET/POST /habits`, `PUT/DELETE /habits/:id`, `GET/POST /habit-completions`, `POST /habit-completions/bulk`, `DELETE /habit-completions/:id` |
-| Notes | `GET/POST /notes`, `DELETE /notes/:id` |
 | Weather | `GET/POST /weather`, `GET /weather/location`, `GET /weather/fetch` |
 | Stats | `GET /stats/{kpi,daily,projects,dow,hour-heatmap,pomo,distribution,insights,weather,detailed}` |
 | Data | `GET /export`, `POST /import`, `DELETE /account/data` |
@@ -247,7 +244,7 @@ All routes are under `/api`. Everything except `/api/auth/*` requires an `Author
 
 ## Data Import & Export
 
-- **Export** downloads a single JSON file containing entries, projects, goals, Pomodoro sessions and settings, habits, habit completions, weather snapshots, and notes.
+- **Export** downloads a single JSON file containing entries, projects, goals, Pomodoro sessions and settings, and weather snapshots.
 - **Import** accepts that file in one of two modes:
   - **Merge** adds records whose `_id` doesn't already exist.
   - **Replace** wipes each imported collection for your account first, then inserts the file's contents.
@@ -271,7 +268,6 @@ FOCUS deploys as a single service; Express serves the built client, so no separa
 
 This is a personal/learning project, and some rough edges are worth knowing about before you rely on it or build on it:
 
-- **No habits or notes UI.** The models, routes, and marketing copy exist, but the dashboard doesn't yet expose them.
 - **Rate limiting is per-process.** Auth endpoints are limited with an in-memory store, so counters reset on restart and aren't shared between instances.
 - **Timezones use a fixed UTC offset.** The browser sends its offset (`?tz=`) and the server buckets days with it; a DST change mid-session is picked up on the next page load.
 

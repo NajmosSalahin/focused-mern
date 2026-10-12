@@ -6,14 +6,13 @@ const features = {
     subtitle: 'Everything you need to stay productive',
     content: (
       <>
-        <p>FOCUS combines six powerful tools into one clean, distraction-free dashboard. Each feature works independently or together for a complete productivity system.</p>
+        <p>FOCUS combines five powerful tools into one clean, distraction-free dashboard. Each feature works independently or together for a complete productivity system.</p>
         <div className="fp-grid">
           {[
             { icon: 'fa-clock', title: 'Pomodoro Timer', desc: 'Customizable focus sessions with auto-advance plans and smart break scheduling.' },
             { icon: 'fa-list-check', title: 'Task Tracking', desc: 'Track every task with live timer, pause/resume, and project assignment.' },
             { icon: 'fa-bullseye', title: 'Goals', desc: 'Set daily, weekly, or monthly time-based goals with auto-reset and progress bars.' },
             { icon: 'fa-folder', title: 'Projects', desc: 'Organize work into projects and see time distribution across each.' },
-            { icon: 'fa-check-circle', title: 'Habits', desc: 'Build streaks with daily habit tracking and visual calendar.' },
             { icon: 'fa-chart-line', title: 'Statistics', desc: 'Deep insights: trends, heatmaps, streaks, weather correlation, and more.' },
           ].map(f => (
             <div key={f.icon} className="fp-card">
@@ -104,31 +103,6 @@ const features = {
       </>
     ),
   },
-  'habits': {
-    title: 'Habit Tracking',
-    subtitle: 'Build streaks and stay consistent',
-    content: (
-      <>
-        <p>Habit tracking in FOCUS helps you build lasting routines with a simple check-in system and visual streak calendar.</p>
-        <h2>How it works</h2>
-        <ul>
-          <li><strong>Daily check-in</strong> — Each day, mark your habits as done. One tap, that's it.</li>
-          <li><strong>Streak tracking</strong> — Build consecutive-day streaks. Don't break the chain.</li>
-          <li><strong>Visual calendar</strong> — See your entire month at a glance with color-coded days</li>
-        </ul>
-        <h2>Why habit tracking matters</h2>
-        <p>Research shows that tracking a habit dramatically increases your chance of sticking with it. The visual streak creates a powerful incentive — you won't want to break it.</p>
-        <h2>Example habits</h2>
-        <ul>
-          <li>Read for 30 minutes</li>
-          <li>Exercise</li>
-          <li>Meditate</li>
-          <li>Write 500 words</li>
-          <li>No social media before noon</li>
-        </ul>
-      </>
-    ),
-  },
   'statistics': {
     title: 'Statistics & Analytics',
     subtitle: 'Understand your productivity with data',
@@ -185,7 +159,6 @@ export default function FeaturePage({ slug, onGetStarted, onSignIn }) {
           <a href="/task-tracking">Tasks</a>
           <a href="/goals">Goals</a>
           <a href="/projects">Projects</a>
-          <a href="/habits">Habits</a>
           <a href="/statistics">Analytics</a>
         </nav>
         <p>FOCUSED &mdash; open source productivity suite</p>
