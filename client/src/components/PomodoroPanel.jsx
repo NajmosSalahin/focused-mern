@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useApp } from '../context/AppContext';
-import { fmtMS, fmtHuman } from '../utils/helpers';
+import { fmtMS, fmtHuman, dateKey } from '../utils/helpers';
 import { updatePomoSettings } from '../api/pomo';
 import { DndContext, DragOverlay, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { SortableContext, useSortable, arrayMove, rectSortingStrategy } from '@dnd-kit/sortable';
@@ -159,8 +159,8 @@ export default function PomodoroPanel() {
   // Auto-badge toggle
   const autoAdv = pomoSettings.autoAdv;
 
-  const today = new Date().toISOString().split('T')[0];
-  const todayWorks = pomoSessions.filter(s => s.mode === 'work' && new Date(s.completedAt).toISOString().split('T')[0] === today).length;
+  const today = dateKey(new Date());
+  const todayWorks = pomoSessions.filter(s => s.mode === 'work' && dateKey(new Date(s.completedAt)) === today).length;
 
   // Track completed blocks via pomoCompleted (increments on complete/skip, resets on Reset All, unaffected by drag)
   const doneCount = types.length > 0 ? pomoCompleted % types.length : 0;

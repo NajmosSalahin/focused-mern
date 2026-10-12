@@ -20,11 +20,18 @@ function getToken() {
 async function request(url, options = {}) {
   _pending++;
   notify();
+  const method = (options.method || 'GET').toUpperCase();
+  // Read endpoints bucket data by the caller's local day — send our UTC offset.
+  let finalUrl = url;
+  if (method === 'GET' || method === 'DELETE') {
+    const tz = -new Date().getTimezoneOffset();
+    finalUrl += `${url.includes('?') ? '&' : '?'}tz=${tz}`;
+  }
   const token = getToken();
   const headers = { 'Content-Type': 'application/json', ...options.headers };
   if (token) headers['Authorization'] = `Bearer ${token}`;
   try {
-    const res = await fetch(`${BASE}${url}`, { headers, ...options });
+    const res = await fetch(`${BASE}${finalUrl}`, { headers, ...options });
     if (!res.ok) {
       const body = await res.json().catch(() => ({ message: res.statusText }));
       const err = new Error(body.message || 'Request failed');

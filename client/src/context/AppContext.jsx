@@ -98,10 +98,10 @@ export function AppProvider({ children }) {
       const merged = { ...DEFAULT_POMO, ...pset };
       setPomoSettings(merged);
       // Sync sessionsD and planIdx with server data, and sync pomoMode to plan
-      const todayKey = new Date().toISOString().split('T')[0];
+      const todayKey = dateKey(new Date());
       let planResetAt = 0;
       try { planResetAt = parseInt(localStorage.getItem('focused_planResetAt') || '0'); } catch {}
-      const todaySessions = ps.filter(s => new Date(s.completedAt).toISOString().split('T')[0] === todayKey);
+      const todaySessions = ps.filter(s => dateKey(new Date(s.completedAt)) === todayKey);
       const afterReset = planResetAt > 0
         ? todaySessions.filter(s => new Date(s.completedAt).getTime() >= planResetAt)
         : todaySessions;
@@ -562,8 +562,8 @@ export function AppProvider({ children }) {
   }, [pomoSettings]);
 
   const clearTodayPomo = useCallback(async () => {
-    const todayKey = new Date().toISOString().split('T')[0];
-    setPomoSessions(prev => prev.filter(s => new Date(s.completedAt).toISOString().split('T')[0] !== todayKey));
+    const todayKey = dateKey(new Date());
+    setPomoSessions(prev => prev.filter(s => dateKey(new Date(s.completedAt)) !== todayKey));
     setPomoCompleted(0);
     setPlanIdx(0);
     setSessionsD(0);

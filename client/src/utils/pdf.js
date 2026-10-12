@@ -1,3 +1,5 @@
+import { dateKey } from './helpers';
+
 const msFmt = ms => {
   if (!ms) return '0m';
   const h = Math.floor(ms / 3600000), m = Math.floor((ms % 3600000) / 60000);
@@ -31,14 +33,14 @@ export function generatePDFSummary(data) {
   const dayData = [];
   for (let i = DAYS - 1; i >= 0; i--) {
     const d = new Date(now); d.setDate(d.getDate() - i); d.setHours(0, 0, 0, 0);
-    const key = d.toISOString().slice(0, 10);
+    const key = dateKey(d);
     const found = daily.find(x => x.date === key);
     const ms = found ? found.ms : 0;
     dayData.push({ date: d, key, ms, hrs: ms / 3600000, label: i === 0 ? 'Today' : d.getDate() === 1 ? d.toLocaleString('en', { month: 'short' }) : String(d.getDate()) });
   }
 
   const totalMs = sum(entries.map(e => e.durationMs || 0));
-  const trackedD = new Set(entries.map(e => e.startTime && new Date(e.startTime).toISOString().slice(0, 10)).filter(Boolean)).size;
+  const trackedD = new Set(entries.map(e => e.startTime && dateKey(new Date(e.startTime))).filter(Boolean)).size;
   const avgDayMs = trackedD > 0 ? totalMs / trackedD : 0;
 
   const DOW_NAMES = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
@@ -56,9 +58,9 @@ export function generatePDFSummary(data) {
 
   const slope = slopeOf(dayData.map(d => d.hrs));
 
-  const daySet = new Set(entries.map(e => e.startTime && new Date(e.startTime).toISOString().slice(0, 10)).filter(Boolean));
-  let curS = 0; { let d = new Date(now); while (daySet.has(d.toISOString().slice(0, 10))) { curS++; d.setDate(d.getDate() - 1); } }
-  let maxS = 0, runS = 0; { let d = new Date(now); for (let i = 0; i < 365; i++) { if (daySet.has(d.toISOString().slice(0, 10))) runS++; else runS = 0; maxS = Math.max(maxS, runS); d.setDate(d.getDate() - 1); } }
+  const daySet = new Set(entries.map(e => e.startTime && dateKey(new Date(e.startTime))).filter(Boolean));
+  let curS = 0; { let d = new Date(now); while (daySet.has(dateKey(d))) { curS++; d.setDate(d.getDate() - 1); } }
+  let maxS = 0, runS = 0; { let d = new Date(now); for (let i = 0; i < 365; i++) { if (daySet.has(dateKey(d))) runS++; else runS = 0; maxS = Math.max(maxS, runS); d.setDate(d.getDate() - 1); } }
 
   // ── SVG helpers ───────────────────────────────────────────
   const W = 640, PAD = 36;

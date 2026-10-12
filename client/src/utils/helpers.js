@@ -34,10 +34,7 @@ export const dateKey = (d) => {
   return `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}-${String(dt.getDate()).padStart(2, '0')}`;
 };
 
-export const toDateStr = (d) => {
-  const dt = new Date(d);
-  return dt.toISOString().split('T')[0];
-};
+export const toDateStr = (d) => dateKey(d);
 
 export const escHtml = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 

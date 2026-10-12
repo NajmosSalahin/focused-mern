@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
+import { dateKey } from '../utils/helpers';
 
 export default function PomoGoal() {
   const { pomoSessions, pomoGoalTarget, setPomoGoalTarget, addToast } = useApp();
@@ -7,8 +8,8 @@ export default function PomoGoal() {
 
   useEffect(() => { setTarget(pomoGoalTarget); }, [pomoGoalTarget]);
 
-  const today = new Date().toISOString().split('T')[0];
-  const done = pomoSessions.filter(s => s.mode === 'work' && !s.skipped && new Date(s.completedAt).toISOString().split('T')[0] === today).length;
+  const today = dateKey(new Date());
+  const done = pomoSessions.filter(s => s.mode === 'work' && !s.skipped && dateKey(new Date(s.completedAt)) === today).length;
   const pct = Math.min(100, (done / target) * 100);
   const met = done >= target;
 

@@ -1,13 +1,16 @@
 const Entry = require('../models/Entry');
+const { parseTz, startOfDay } = require('../utils/dates');
 
 exports.list = async (req, res) => {
   try {
+    const tz = parseTz(req.query.tz);
     const filter = { userId: req.userId };
     if (req.query.date) {
-      const d = new Date(req.query.date);
-      const next = new Date(d);
-      next.setDate(next.getDate() + 1);
-      filter.startTime = { $gte: d, $lt: next };
+      const d = new Date(`${req.query.date}T00:00:00Z`);
+      if (!isNaN(d)) {
+        const start = startOfDay(d, tz);
+        filter.startTime = { $gte: start, $lt: new Date(start.getTime() + 86400000) };
+      }
     } else if (req.query.startDate || req.query.endDate) {
       const range = {};
       if (req.query.startDate) range.$gte = new Date(req.query.startDate);
