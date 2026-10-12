@@ -54,7 +54,13 @@ app.use('/api/import', auth, require('./routes/importData'));
 app.use('/api/notes', auth, require('./routes/notes'));
 app.use('/api/account', auth, require('./routes/account'));
 
-app.use(express.static(path.join(__dirname, '..', 'client', 'dist'), { maxAge: '1y', immutable: true }));
+app.use(express.static(path.join(__dirname, '..', 'client', 'dist'), {
+  maxAge: '1y',
+  immutable: true,
+  setHeaders: (res, filePath) => {
+    if (filePath.endsWith('index.html')) res.setHeader('Cache-Control', 'no-cache');
+  }
+}));
 app.get('/sitemap.xml', (req, res) => {
   res.set('Content-Type', 'text/xml');
   res.sendFile(path.join(__dirname, '..', 'client', 'dist', 'sitemap.xml'));
