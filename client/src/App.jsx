@@ -62,7 +62,7 @@ function AppContent() {
 
   useHotkeys();
 
-  const publicSlugs = ['features', 'pomodoro-technique', 'task-tracking', 'goals', 'projects', 'habits', 'statistics'];
+  const publicSlugs = ['features', 'pomodoro-technique', 'task-tracking', 'goals', 'projects', 'statistics'];
   const currentSlug = publicSlugs.find(s => window.location.pathname === `/${s}`);
 
   if (currentSlug) {

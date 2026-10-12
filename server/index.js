@@ -56,13 +56,10 @@ app.use('/api/projects', auth, require('./routes/projects'));
 app.use('/api/goals', auth, require('./routes/goals'));
 app.use('/api/pomo-sessions', auth, require('./routes/pomoSessions'));
 app.use('/api/pomo-settings', auth, require('./routes/pomoSettings'));
-app.use('/api/habits', auth, require('./routes/habits'));
-app.use('/api/habit-completions', auth, require('./routes/habitCompletions'));
 app.use('/api/weather', auth, require('./routes/weather'));
 app.use('/api/stats', auth, require('./routes/stats'));
 app.use('/api/export', auth, require('./routes/exportData'));
 app.use('/api/import', auth, require('./routes/importData'));
-app.use('/api/notes', auth, require('./routes/notes'));
 app.use('/api/account', auth, require('./routes/account'));
 
 app.use(express.static(path.join(__dirname, '..', 'client', 'dist'), {
