@@ -131,6 +131,7 @@ Environment variables for the server (`server/.env`):
 | `BREVO_API_KEY` | No | Enables real email delivery. Without it, emails are logged to the console. |
 | `EMAIL_FROM` | No | Sender address for outgoing email. Must be a sender verified in your Brevo account. |
 | `CLIENT_URL` | No | Base URL used to build verification/reset links. Defaults to `http://localhost:5173`. Set this to your deployed URL in production. |
+| `CORS_ORIGIN` | No | Comma-separated list of allowed browser origins. Defaults to `https://focused-4l3h.onrender.com`. |
 
 ---
 
@@ -150,7 +151,7 @@ Run from the repository root:
 
 ## Keyboard Shortcuts
 
-Shortcuts are ignored while typing in an input field.
+Single-key shortcuts are ignored while typing in an input field; modifier shortcuts work everywhere.
 
 | Key | Action |
 |---|---|
@@ -158,12 +159,22 @@ Shortcuts are ignored while typing in an input field.
 | `R` | Reset the current session |
 | `S` | Skip to the next session |
 | `1` / `2` / `3` | Switch to Work / Short / Long |
+| `N` | Focus the task input |
+| `Ctrl/Cmd + Enter` | Start / stop time tracking |
+| `Ctrl/Cmd + P` | Pause / resume the tracker |
+| `[` / `]` | Previous / next day |
+| `T` | Jump to today |
+| `G` | New goal |
+| `P` | New project |
 | `Ctrl/Cmd + K` | Command palette |
+| `Ctrl/Cmd + ,` | Pomodoro settings |
+| `Ctrl/Cmd + S` | Statistics & analytics |
+| `Ctrl/Cmd + E` | Export data |
+| `Ctrl/Cmd + I` | Import data |
 | `` ` `` | Toggle terminal |
+| `Ctrl/Cmd + L` | Clear terminal |
 | `?` | Show the shortcuts panel |
 | `Esc` | Close the topmost modal |
-
-The in-app shortcuts panel also lists further bindings (task-tracker, navigation, and panel shortcuts). Some of those are documented but not yet wired up; see [Known Limitations](#known-limitations).
 
 ---
 
@@ -251,7 +262,7 @@ FOCUS deploys as a single service; Express serves the built client, so no separa
 1. Create a new **Web Service** on [Render](https://render.com/) (or any Node host) from your repository.
 2. **Build command:** `npm install && npm run build`
 3. **Start command:** `npm start`
-4. Set environment variables: `MONGODB_URI`, a strong `JWT_SECRET`, and `CLIENT_URL` (your deployed URL).
+4. Set environment variables: `MONGODB_URI`, a strong `JWT_SECRET`, `CLIENT_URL`, and `CORS_ORIGIN` (your deployed URL).
 5. *(Optional)* Add `BREVO_API_KEY` and `EMAIL_FROM` to send real verification and password-reset emails.
 
 ---
@@ -260,12 +271,9 @@ FOCUS deploys as a single service; Express serves the built client, so no separa
 
 This is a personal/learning project, and some rough edges are worth knowing about before you rely on it or build on it:
 
-- **Ownership checks are incomplete.** Update/delete handlers for entries, goals, projects, habits, habit completions, and notes look records up by ID without confirming they belong to the requesting user. Treat multi-user deployments with care until this is fixed.
-- **Some documented shortcuts aren't implemented.** The shortcuts panel lists `N`, `Ctrl+Enter`, `Ctrl+P`, `[`/`]`, `T`, `G`, `P`, and `Ctrl+S/E/I/,`, but only the Pomodoro keys, `Ctrl+K`, `` ` ``, `?`, and `Esc` are currently bound.
-- **Missing pieces referenced by the client.** `App.jsx` imports a `StatsModal` component and `style.css`, and the export dialog defines a PDF handler that calls `/api/export/pdf`; none of these are present in the repository as published.
 - **No habits or notes UI.** The models, routes, and marketing copy exist, but the dashboard doesn't yet expose them.
-- **Timezone handling.** Several "today" comparisons use UTC dates, so day boundaries can be off for users far from UTC.
-- **No rate limiting** on authentication endpoints, and CORS is open.
+- **Rate limiting is per-process.** Auth endpoints are limited with an in-memory store, so counters reset on restart and aren't shared between instances.
+- **Timezones use a fixed UTC offset.** The browser sends its offset (`?tz=`) and the server buckets days with it; a DST change mid-session is picked up on the next page load.
 
 ---
 
