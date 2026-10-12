@@ -3,20 +3,14 @@ const Project = require('../models/Project');
 const Goal = require('../models/Goal');
 const PomoSession = require('../models/PomoSession');
 const PomoSetting = require('../models/PomoSetting');
-const Habit = require('../models/Habit');
-const HabitCompletion = require('../models/HabitCompletion');
 const WeatherSnapshot = require('../models/WeatherSnapshot');
-const Note = require('../models/Note');
 
 const MODEL_MAP = {
   entries: Entry,
   projects: Project,
   goals: Goal,
   pomoSessions: PomoSession,
-  habits: Habit,
-  habitCompletions: HabitCompletion,
-  weather: WeatherSnapshot,
-  notes: Note
+  weather: WeatherSnapshot
 };
 
 const OLD_KEY_MAP = {

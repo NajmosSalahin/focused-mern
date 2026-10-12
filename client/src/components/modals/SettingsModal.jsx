@@ -27,7 +27,7 @@ export default function SettingsModal() {
 
   const handleDeleteAll = async () => {
     const ok = await alert(
-      'Delete ALL your data?\n\nThis will permanently remove all entries, projects, goals, pomodoro sessions, habits, weather data, and notes.\n\nThis action CANNOT be undone.',
+      'Delete ALL your data?\n\nThis will permanently remove all entries, projects, goals, pomodoro sessions, and weather data.\n\nThis action CANNOT be undone.',
       true, true
     );
     if (!ok) return;
